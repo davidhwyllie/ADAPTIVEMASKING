@@ -10,8 +10,9 @@ Both systems had >=16GB RAM. We have not tested other configurations.
 ## Software
 ### External tools
 [Kraken v1.0](https://ccb.jhu.edu/software/kraken/), a metagenomic classifier  
-[Stampy](http://www.well.ox.ac.uk/project-stampy), a mapper  
+[Stampy](http://www.well.ox.ac.uk/project-stampy), a mapper
 [Bowtie v2.3.4.1](https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.3.4.1), an alternative mapper  
+[bcftools](http://www.htslib.org/doc/bcftools.html), for vcf/bcf manipulation 
 [python v3.5.2](https://www.python.org/downloads/)    
 [R v3.3](https://cran.r-project.org/)  
  

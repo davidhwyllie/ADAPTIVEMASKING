@@ -62,8 +62,7 @@ for inputfile in inputfiles:
 
 ```
 
-If you want subsequent random access to subsections of the regions examined, please see the .persist() method in the vcfScan class.  
-This will persist per-base information in the regions examined (which, in the above case, includes the whole genome) to an indexed hdf5 format.
+Optional: If you want subsequent random access to subsections of the regions examined, please see the .persist() method in the vcfScan class.    This will persist per-base information in the regions examined (which, in the above case, includes the whole genome) to an indexed hdf5 format.
 
 The regions extracted from the genbank file can be viewed:
 ```

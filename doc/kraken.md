@@ -1,11 +1,12 @@
 # Running Kraken
 
-[Kraken](https://ccb.jhu.edu/software/kraken/) is a metagenomic classifier which assigns reads to taxa based on a dictionary.
-For the publication, we used a custom database constructed from bacterial reference sequences in Genbank, plus human sequences.
-Instructions on how to build this are in Methods.
+[Kraken](https://ccb.jhu.edu/software/kraken/) is a metagenomic classifier which assigns reads to taxa based on a dictionary.  
+For the publication, we used a custom database constructed from bacterial RefSeq in Genbank, plus a  human genomic build.  
+Instructions on how to build this database are in Methods.
 
-For this demonstration, we illustrate the process using one of the [MiniKraken databases](https://ccb.jhu.edu/software/kraken/dl/minikraken_20171101_4GB_dustmasked.tgz) released by Kraken's developers.
-This has similar specificity, but about 25% lower sensitivity, for genus-level read assignment.
+
+For this demonstration, we illustrate the process using one of the [MiniKraken databases](https://ccb.jhu.edu/software/kraken/dl/minikraken_20171101_4GB_dustmasked.tgz) released by Kraken's developers.  
+Their data indicates that compared with the full database, this mini-database has similar specificity, but about 25% lower sensitivity, for genus-level read assignment.
 
 Example usage is as follows:
 

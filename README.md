@@ -6,11 +6,10 @@ https://www.biorxiv.org/content/early/2018/01/23/252460).
 ## DOCUMENT IN PROGRESS
 
 [Prerequisites](doc/Prerequisites.md)    
-Mapping data   
-[Running Kraken](doc/Kraken.md)  
-Processing mapped data to VCF/BCF      
+[Mapping data and VCF generation](doc/map2vcf.md)  
+[Running Kraken](doc/kraken.md)       
 [Extracting per-region minor variant frequencies](doc/extractmaf.md)     
-Modelling minor variant frequencies    
-Depicting the results    
-What to do next  
+[Modelling minor variant frequencies](doc/model_maf.md)   
+[Depicting the results](doc/depict.md)    
+[What to do next](doc/next.md) 
 

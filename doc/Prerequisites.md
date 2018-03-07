@@ -5,18 +5,16 @@ We have tested this software on
 * Windows (Win 7 x64)
 * Ubuntu 16.04 LTS.
 
-Both systems had 16GB RAM. We have not tested other configurations.
+Both systems had >=16GB RAM. We have not tested other configurations.
 
 ## Software
 ### External tools
-[Kraken](https://ccb.jhu.edu/software/kraken/), a metagenomic classifier
-
-### Languages
-The following are required:
-
-python3 >= 3.5.2.  
-R > 3.3.0.
-
+[Kraken v1.0](https://ccb.jhu.edu/software/kraken/), a metagenomic classifier  
+[Stampy](http://www.well.ox.ac.uk/project-stampy), a mapper  
+[Bowtie v2.3.4.1](https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.3.4.1), an alternative mapper  
+[python v3.5.2](https://www.python.org/downloads/)    
+[R v3.3](https://cran.r-project.org/)  
+ 
 No testing has been done with earlier versions.  It is unlikely the software will work with python 2.7.
 
 ### Python packages

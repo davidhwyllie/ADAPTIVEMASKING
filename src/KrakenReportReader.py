@@ -58,13 +58,14 @@ class KrakenReportReader():
 			
 		Returns:
 		    returns a dictionary, example:
-			{'V': 931, 'B': 61, 'guid': 'test1', 'M': 1226, 'E': 81, 'nTotal': 2299}
+			{'V': 931, 'B': 61, 'sampleId': 'test1', 'M': 1226, 'E': 81, 'nReads': 2299}
 			Where:
 			V is an estimate of the number of viral reads
 			B is an estimate of the number of bacterial reads which don't correspond to self.genus_of_interest
 			E is an estimate of the number of eukaryotic reads
 			M is an estimate of the number of reads belonging to self.genus_of_interest.
-			nTotal is the the total number of classified reads
+			nReads is the the total number of classified reads
+			sampleId is the guid provided
 			
 			also sets self.genera (a pandas data frame) containing genus level information, from which the above summary is computed.
 			
@@ -121,9 +122,13 @@ class KrakenReportReader():
 				# compute sum(nBelow) by bev
 				by_bev = self.genera.groupby(['bev'])['nBelow'].sum()
 				by_bev_dict = by_bev.to_dict()
-				by_bev_dict['nTotal'] = sum(self.genera['nBelow'])
-				by_bev_dict['guid'] = guid
+				by_bev_dict['nReads'] = sum(self.genera['nBelow'])
+				by_bev_dict['sampleId'] = guid
 				
+				mandatory_fields = ['B','E','V','M']
+				for mandatory_field in mandatory_fields:
+					if not mandatory_field in by_bev_dict.keys():
+						by_bev_dict[mandatory_field] = 0
 				return(by_bev_dict)
 			
 	
@@ -135,7 +140,7 @@ class test_KrakenReader_1(unittest.TestCase):
 		inputfile = os.path.join('..','testdata','test1.kraken_report')
 		result = krr.simplify(inputfile= inputfile, guid = 'test1')
 		
-		self.assertEqual(result, {'V': 931, 'B': 61, 'guid': 'test1', 'M': 1226, 'E': 81, 'nTotal': 2299})
+		self.assertEqual(result, {'V': 931, 'B': 61, 'sampleId': 'test1', 'M': 1226, 'E': 81, 'nReads': 2299})
 						 
 		outputfile = os.path.join('..','unittest_tmp','output.csv')
 		if os.path.exists(outputfile):

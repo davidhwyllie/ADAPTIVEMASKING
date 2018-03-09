@@ -14,7 +14,7 @@ In the above example, the BaseCounts and BaseCounts4 tags are examples.
 
 A working example, using the project's test data, is below.  The code is supplied as working_example_of_maf_extraction.py
 
-```
+```python
 #!/usr/bin/env python
 """ example of use of regionScan """
 
@@ -30,13 +30,38 @@ print("Extracting features from genbank file {0}".format(genbank_file_name))
 rs = regionScan_from_genbank(genbank_file_name, method = 'CDS', infotag='BaseCounts4')
 print("Feature extraction complete")	
 
-# export the extracted CDs to excel;
+```
+
+This stores the regions of interest in the regionScan_from_genbank object.
+The regions generated can be exported:
+
+```python
+# export the extracted rois to excel;
 output_excel = os.path.join('..','output', 'regions.xlsx')
 
 # note that rs.regions is a pandas dataframe, and pandas methods can be called on it;
 rs.regions.to_excel(output_excel)
 print("Exported extracted features to {0}".format(output_excel)	)
 
+```
+
+The regions extracted from the genbank file look something like this:
+
+```
+start_pos	end_pos	name
+1	1524	Rv0001
+1525	2051	near_Rv0002
+2052	3260	Rv0002
+3261	3279	near_Rv0003
+3280	4437	Rv0003
+4438	4433	near_Rv0004
+
+```
+
+Now, we are ready to parse the input vcf files.
+An example of how to do this follows, outputting the summary data into a series of .csv files:
+
+```python
 # define where the output is to go.
 outputdir = os.path.join('..','output')
 
@@ -58,23 +83,14 @@ for inputfile in inputfiles:
         print("Examining file {0} ".format(guid))
         res = rs.parse(vcffile = inputfile, guid= guid)
         rs.region_stats.to_csv(targetfile)
-            
+        
+        # Optional: If you want subsequent random access to subsections of the
+        # regions examined, please see the .persist() method in the vcfScan class.
+        # This will persist per-base information in the regions examined (which, in the
+        # above case, includes the whole genome) to an indexed hdf5 format.
 
 ```
 
-Optional: If you want subsequent random access to subsections of the regions examined, please see the .persist() method in the vcfScan class.    This will persist per-base information in the regions examined (which, in the above case, includes the whole genome) to an indexed hdf5 format.
-
-The regions extracted from the genbank file can be viewed:
-```
-start_pos	end_pos	name
-1	1524	Rv0001
-1525	2051	near_Rv0002
-2052	3260	Rv0002
-3261	3279	near_Rv0003
-3280	4437	Rv0003
-4438	4433	near_Rv0004
-
-```
 
 The output per region looks like this:
 ```
@@ -107,8 +123,10 @@ In the approach taken in the linked paper,
 total_nonmajor_depth is modelled as a function non-Mycobacterial bacterial DNA concentrations, using total_depth as an offset.
 
 
-A freestanding script suitable for command line use, extract_mixed.py, is also available.  Please see the documentation in the file.
-The following command would do the same as the example script:
+A freestanding script suitable for command line use, extract_mixed.py, is also available.
+Please see the documentation in the file.
+
+The following command would do the same as the example above:
 
 ```
 python extract_mixed.py ../testdata/NC_000962.3.gb ../testdata/*v3.vcf.gz BaseCounts4 ../output

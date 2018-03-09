@@ -25,9 +25,9 @@ Please see example code [illustrating of mapping and vcf generation](doc/map2vcf
 One of the key findings from our paper is that mapping accuracy for some regions is determined by the amount of 'non-target' bacteria DNA present, in our case from species other than *Mycobacteria*.
 We estimated this using Kraken.  Newer [tools](https://ccb.jhu.edu/software/bracken/) producing data in a similar format can also be used. 
 Please see example code [illustrating the use of Kraken](doc/kraken.md). 
-3. Determining the minor variant frequencies for genomic regions
+3. Determining the minor variant frequencies for genomic regions  
 We measured the minor variant frequencies, - that is, the read depth accounted for by calls other than the most common nucleotide - across genomic regions.
-Please see [here](doc/extractmaf.md), which described the code we provided to do this.
+Please see [here](doc/extractmaf.md), which describes the code we provided to do this.
 4. Modelling minor variant frequencies in reads mapped to genomic regions     
 Subsequently, we fitted Poisson models, region-by_region, estimating the relationship between the
 minor variant call depth (~ amount of mixture ) detected and an estimate of the amount of non-bacterial DNA present.

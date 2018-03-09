@@ -1,6 +1,6 @@
 # Extract minor variant frequencies from VCF files
 
-This is done using the regionScan_from_genbank class.
+Extracting minor variant frequencies from VCF files is done using the *regionScan_from_genbank* class.
 The code examines a VCF file, of which an example is below.
 ```
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	EXTRA
@@ -9,8 +9,8 @@ R00000039	2	.	T	G	32.10	K0.90;z	ABQ4=38.824;BCALL=N;BaseCounts=0,0,8,81;BaseCoun
 R00000039	3	.	G	T	14.20	K0.90;S25;z	ABQ4=38.750;BCALL=N;BaseCounts=0,1,83,5;BaseCounts4=0,0,28,4;DM4=-3.103;DM4L=-7.944;DP=90;DP4=25,3,4,0;DPT4L=-82.726;DZ4=-2.480;DZ4L=-7.003;GC=60.380;MQ=59;MQ4=60;PCALL4=0.000;PCONS4=1.000;SBR=0	GT:DP	0/1:32
 ```
 
-It expects a field in the INFO section which contains the numbers of A,C,G,T to process.  
-In the above example, the BaseCounts and BaseCounts4 tags are examples.
+*regionScan_from_genbank* expects a field in the INFO section which contains the numbers of A,C,G,T to process.  
+In the above extract, the BaseCounts and BaseCounts4 tags are examples.
 
 A working example, using the project's test data, is below.  The code is supplied as working_example_of_maf_extraction.py
 
@@ -26,9 +26,7 @@ from vcfScan import regionScan_from_genbank
 
 # identify the genbank file of interest
 genbank_file_name = os.path.join("..", "testdata", "NC_000962.3.gb")
-print("Extracting features from genbank file {0}".format(genbank_file_name))
 rs = regionScan_from_genbank(genbank_file_name, method = 'CDS', infotag='BaseCounts4')
-print("Feature extraction complete")	
 
 ```
 
@@ -37,11 +35,9 @@ The regions generated can be exported:
 
 ```python
 # export the extracted rois to excel;
-output_excel = os.path.join('..','output', 'regions.xlsx')
-
 # note that rs.regions is a pandas dataframe, and pandas methods can be called on it;
-rs.regions.to_excel(output_excel)
-print("Exported extracted features to {0}".format(output_excel)	)
+output_excel_filename = os.path.join('..','output', 'regions.xlsx')
+rs.regions.to_excel(output_excel_filename)
 
 ```
 
@@ -67,14 +63,16 @@ outputdir = os.path.join('..','output')
 
 # identify files to process
 globpattern= os.path.join('..','testdata',"*v3.vcf.gz")
+
+# find the files
 inputfiles = glob.glob(globpattern)
 print("Found {0} input files".format(len(inputfiles)))
 
-
+# parse each file
 for inputfile in inputfiles:
     guid=os.path.basename(inputfile)[0:36]
     
-    # test whether the file has already been parsed
+    # test whether the file has already been parsed; skip any that have
     targetfile = os.path.join(outputdir,'{0}.txt'.format(guid))
     if os.path.exists(targetfile):
         print('exists {0}'.format(guid))
@@ -92,8 +90,8 @@ for inputfile in inputfiles:
 ```
 
 
-The output per region looks like this:
-```
+Inspecting the csv output shows the output per region looks like this:
+```csv
 roi_name,mean_depth,min_depth,max_depth,start,stop,length,mean_maf,total_depth,total_nonmajor_depth
 Rv0001,73.99540682414698,21,126,1,1524,1524,0.0005167313777354538,112769,60
 Rv0002,41.789909015715466,10,91,2052,3260,1209,0.00108890037274931,50524,47
@@ -122,11 +120,9 @@ Field names are as follows:
 In the approach taken in the linked paper,  
 total_nonmajor_depth is modelled as a function non-Mycobacterial bacterial DNA concentrations, using total_depth as an offset.
 
-
+### Command line use
 A freestanding script suitable for command line use, extract_mixed.py, is also available.
-Please see the documentation in the file.
-
-The following command would do the same as the example above:
+Please see the documentation in the file for command line options.  The following command would do the same as the example above:
 
 ```
 python extract_mixed.py ../testdata/NC_000962.3.gb ../testdata/*v3.vcf.gz BaseCounts4 ../output

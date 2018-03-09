@@ -6,13 +6,25 @@ import pandas as pd
 import glob
 import numpy as np
 import logging
-from KrakenReportReader import KrakenReportReader
+
 import statsmodels.api as sm
 from bokeh.layouts import gridplot
 from bokeh.plotting import figure, show, output_file
-import logging
+from bokeh.io import output_file, show
+from bokeh.layouts import row, column, gridplot, widgetbox
+from bokeh.models import  NumberFormatter
+from bokeh.models import  ColumnDataSource,\
+                          Circle, \
+                          HoverTool, SaveTool, ResetTool, BoxZoomTool,\
+                          ZoomInTool, ZoomOutTool,  PanTool, TapTool,\
+                          WheelZoomTool, BoxSelectTool, PolySelectTool,\
+                          Span, Arrow, OpenHead
+from bokeh.models.widgets import DataTable, DateFormatter, \
+                          TableColumn, CheckboxGroup, RadioButtonGroup, \
+                          TextInput, Panel, Tabs
+from KrakenReportReader import KrakenReportReader
+from vcfScan import regionScan_from_genbank
 
-# define the input variables
 class AdaptiveMasking():
 	""" computes minor variant frequencies across genomic regions,
 	and their relationship to non-target DNA present in the sample """
@@ -223,7 +235,7 @@ class AdaptiveMasking():
 				res['parameter']=res.index
 				
 			else:
-				print("Model fitting failed")
+				logging.WARN("Model fitting failed, skipping region {0}".format(roi_name))
 				model_input.to_hdf(hdf_file, 'modelling_failed_input',
 						  mode='a',
 						  format='table',
@@ -259,34 +271,166 @@ class AdaptiveMasking():
 		self.coefficients = estimated_mixtures
 		return estimated_mixtures
 	def depict_model(self,
-					 clip_ci = 10):
-		""" depicts the coefficients fitted
+					 genbank_file_name,
+					 exclude_estimates_over = 10000):
 		
+		""" depicts the coefficients fitted.
+		
+			Arguments:
+				genbank_file_name: the name of the genbank file used to define regions.
+				exclude_estimates_over:  will not plot parameter estimates more than this number.
+				In this setting, the background rate of mixtures is about 0.001 and the
+				'estimate' referred to is an incidence rate ratio relative to the background rate;
+				Observed estimates for highly affected genes are in the range 5-15.
+				Useful for exclusion of rare parameter estimates which are essentially infinite due to non-convergence.
+			
 			"""
+			
+		
+		# read region annotation from genbank entry
+		logging.info("Reading regions from genbank entry")
+		rs = regionScan_from_genbank(genbank_file_name, method = 'CDS')
+		regions = rs.regions.rename({'name':'roi_name'}, axis=1)
+
+		for i in regions.index:
+			regions.loc[i,'length']= np.abs(regions.loc[i,'end_pos']-regions.loc[i,'start_pos'])
+			regions.loc[i,'mid']= (regions.loc[i,'end_pos']+regions.loc[i,'start_pos'])	/2		
+
+		
 		self.coefficients = pd.read_hdf(self.hdf_file, 'model_output')
 		
-		# compute the minor variant frequency when the reference category is present ( <1% in our example)
-		# and the fold change (for the coefficients)
+		# get the parameters modelled
+		param_values = self.coefficients['parameter'].unique()
+		highest_test_cat = max(set(param_values)-set(['const']))
+
+		# compute the IRR? fold change (for the coefficients)
 		self.coefficients['exp_Estimate'] = [np.exp(x) for x in self.coefficients['Estimate']]
 		self.coefficients['log10_Estimate'] = [2.303*x for x in self.coefficients['Estimate']]
-				
-		# compute histograms
-		param_value = 'const'
-		these_coeffs = self.coefficients.query("parameter == '{0}'".format(param_value))			
-		print(these_coeffs)
-		hist,edges = np.histogram(self.coefficients['exp_Estimate'], bins=200)
-		print(hist)
-		print(edges)
+
+		df1 = self.coefficients.query("parameter=='{0}'".format(highest_test_cat))
+		df2 = self.coefficients.query("parameter=='{0}'".format('const'))
+		df1 = df1[['exp_Estimate','roi_name']]
+		df2 = df2[['exp_Estimate','roi_name']]
+		df1 = df1.rename({'exp_Estimate':'hi'}, axis=1)
+		df2 = df2.rename({'exp_Estimate':'const'}, axis=1)
+		bivar = df1.merge(df2, how = 'inner', on= 'roi_name')
+		bivar = bivar.merge(regions, how = 'inner', on= 'roi_name')
+
+		bivar_source= ColumnDataSource(bivar)
+		bivar_tools = "save,reset,box_zoom,zoom_in,zoom_out,pan,tap,box_select"
 		
-		p1 = figure(title="Normal Distribution (?=0, ?=0.5)",tools="save",
-					background_fill_color="#E8DDCB")
-		p1.quad(top=hist, bottom=0, left=edges[:-1], right=edges[1:],
-        fill_color="#036564", line_color="#033649")
-		p1.legend.location = "center_right"
-		p1.legend.background_fill_color = "darkgrey"
-		p1.xaxis.axis_label = 'x'
-		p1.yaxis.axis_label = 'Pr(x)'
-		show(p1)
+		bp = figure(plot_width=600, plot_height=400,tools=bivar_tools,toolbar_location='right')
+		bp.title.text = "Mixtures in the presence vs. absence of unexpected bacterial DNA"
+		r0 = bp.circle(source = bivar_source,  x='const', y='hi', size= 2, alpha=0.5)
+		bp.xaxis.axis_label = 'Est. Mixture when reference category amount of unexpected bacterial DNA'
+		bp.yaxis.axis_label = 'IRR mixture estimate with {0} extr. DNA'.format(highest_test_cat)
+		
+		g1 = figure(plot_width=600, plot_height=200,tools=bivar_tools,toolbar_location='right')
+		g1.title.text = "Gene positions"
+		r1 = g1.circle(source = bivar_source,  x='mid', y='hi', size= 2, alpha=0.5)
+		g1.xaxis.axis_label = 'Genome position'
+		g1.yaxis.axis_label = 'IRR mix. {0} extr. DNA'.format(highest_test_cat)
+
+		g2 = figure(plot_width=600, plot_height=200,tools=bivar_tools,toolbar_location='right')
+		g2.title.text = "Gene positions"
+		r2 = g2.circle(source = bivar_source,  x='mid', y='const', size= 2, alpha=0.5)
+		g2.xaxis.axis_label = 'Genome position'
+		g2.yaxis.axis_label = 'Est. mix with ref cat. extr. DNA'.format(highest_test_cat)
+		 
+		hover1=HoverTool(renderers=[r0, r1,r2])
+		hover1.tooltips= [("roi_name", "@roi_name"),("% mix ref. cat", "@const"),("IRR mix {0}".format(highest_test_cat),"@hi")]
+		bp.add_tools(hover1)
+		g1.add_tools(hover1)
+		g2.add_tools(hover1)				
+
+		# define columnar data source
+		          # define columnar data source
+		columns = [
+				  TableColumn(field="roi_name", title="Region analysed"),
+				  TableColumn(field="const", title="Mix with ref. cat extra DNA", formatter = NumberFormatter(format ='0.00000')),
+				  TableColumn(field='hi', title='IRR mix with {0} extra DNA'.format(highest_test_cat), formatter = NumberFormatter(format = '0.00')),
+				  TableColumn(field='start_pos', title='region start', formatter = NumberFormatter(format = '0')),
+				  TableColumn(field='length', title='region length', formatter = NumberFormatter(format = '0'))	
+				  ]
+		data_table = DataTable(source=bivar_source,
+							   columns=columns,
+							   width=600,
+							   height=200,
+							   scroll_to_selection= True,
+							   sortable = True,
+							   reorderable = True,
+							   editable = False,
+							   fit_columns = True)
+		
+		lc = column ( [row([bp]), row([g1]), row([g2])	] )	# row([data_table]), 
+		content = Panel(child = lc, title='Bivariate')
+			
+		# add the plots to a tab
+		tab_content = []
+		tab_content.append(content)
+		tls = Tabs (tabs = tab_content)
+
+		# compute histograms for each parameter
+		for param_value in param_values:
+	
+			if param_value == 'const':
+				x_axis_label = 'Minor variant frequency with reference category unexpected bacterial DNA'
+				tab_name = 'Low extr. DNA'
+			else:
+				x_axis_label = 'IRR if unexpected bacterial DNA in range {0} relative to ref. cat'.format(param_value)
+				tab_name = 'Extr. DNA '+param_value
+			these_coeffs = self.coefficients.query("parameter == '{0}'".format(param_value))
+			
+			
+			these_coeffs = these_coeffs[these_coeffs['Fitting_succeeded']==True]
+
+			# sanity check: these_coeffs must be < exclude_estimates_over;
+			# if not, estimates are likely to be unstable
+			# only one coefficient is excluded in the test set with a cutoff of 50
+			these_coeffs = these_coeffs[these_coeffs['exp_Estimate']< exclude_estimates_over]
+
+			# construct histogram and cusum
+			hist,edges = np.histogram(these_coeffs['exp_Estimate'], bins=300)
+			cumdist = [0]*len(hist)
+			for i in range(len(cumdist)-1):
+				cumdist[i+1]= hist[i]+cumdist[i]
+			for i in range(len(cumdist)):
+				cumdist[i]= cumdist[i]/sum(hist)
+	
+			# depict
+			hist_tools = "save,reset,box_zoom,zoom_in,zoom_out,pan"
+			p1 = figure(title="Estimated Minor variant frequency across regions",tools=hist_tools,
+						background_fill_color="#E8DDCB", plot_height=300)
+			p1.quad(top=hist, bottom=0, left=edges[:-1], right=edges[1:],
+			fill_color="#036564", line_color="#033649")
+			p1.legend.location = "center_right"
+			p1.legend.background_fill_color = "darkgrey"
+			p1.xaxis.axis_label = x_axis_label
+			p1.yaxis.axis_label = 'Number of regions'
+			
+			if not param_value=='const':
+				vline = Span(location=1, dimension='height', line_color='red', line_width=1)
+				p1.renderers.extend([vline])
+			
+			p2 = figure(title="Cumulative Estimated Minor variant frequency across regions",tools=hist_tools,
+						background_fill_color="#E8DDCB", plot_height=300)
+			p2.quad(top=cumdist, bottom=0, left=edges[:-1], right=edges[1:],
+			fill_color="#036564", line_color="#033649")
+			p2.legend.location = "center_right"
+			p2.legend.background_fill_color = "darkgrey"
+			p2.xaxis.axis_label = x_axis_label
+			p2.yaxis.axis_label = 'Cumulative proportion of regions'
+	
+			lc = column ( [row([p1]), row([p2])])
+			content = Panel(child = lc, title=tab_name)
+			
+			# add the plots to a tab
+			tab_content.append(content)
+		tls = Tabs (tabs = tab_content)
+
+		layout = tls
+		show(layout) 
+
 		# sometimes, if model predictions are unstable, very wide CIs are generated.
 		# we generate new fields, clip_lower_ci and clip_upper_ci with abs(ci) = clip_ci for such unstable estimates.
 		# this helps depiction
@@ -303,8 +447,8 @@ am = AdaptiveMasking(
 	genus_of_interest= 'Mycobacterium',
 	rebuild_databases_if_present  = False
 					)
-am.fit_model()
-am.depict_model()
+
+am.depict_model(genbank_file_name = os.path.join("..", "modelling", "refgenome", "NC_000962.3.gb"))
 #
 exit()
 

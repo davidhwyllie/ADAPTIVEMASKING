@@ -8,6 +8,9 @@ import numpy as np
 import logging
 from KrakenReportReader import KrakenReportReader
 import statsmodels.api as sm
+from bokeh.layouts import gridplot
+from bokeh.plotting import figure, show, output_file
+import logging
 
 # define the input variables
 class AdaptiveMasking():
@@ -39,17 +42,22 @@ class AdaptiveMasking():
 				None
 		"""
 		
+		# configure logging;
+		logger = logging.getLogger()
+		logger.level = logging.INFO
+		
+		# persist parameters as object properties;
 		self.analysis_name= analysis_name	
 		self.persistdir = persistdir
 		self.genus_of_interest = genus_of_interest
 		self.categorisation_bins = categorisation_bins
 		self.model_min_depth = model_min_depth
 			
-		# now recover all the data from the genetic parsing.
-		# store in an hdf5 data structure.
+		# configure an hdf5 data structure.
 		self.hdf_file = os.path.join(self.persistdir,'{0}.h5'.format(analysis_name))
 		if os.path.exists(self.hdf_file) and rebuild_databases_if_present:
 			os.unlink(self.hdf_file)
+		
 			
 		return None	
 	def read_model_input(self,
@@ -80,6 +88,8 @@ class AdaptiveMasking():
 			results.append(result)
 			
 			nRead+=1
+			if nRead % 100 == 0:
+				logging.info("Read {0} Kraken files".format(nRead))
 			if nRead > max_files_analysed:
 				logging.warning("Stopped reading Kraken data as max_files_analysed was reached")
 				break
@@ -123,15 +133,20 @@ class AdaptiveMasking():
 		
 			if guid in kraken_sampleIds:		# if there is a kraken report
 				# read into database
-		
-				df.to_hdf(self.hdf_file, 'model_input',
-						  mode='a',
-						  format='table',
-						  append= True,
-						  data_columns= ['sampleId','gene'])
+				try:
+					df.to_hdf(self.hdf_file, 'model_input',
+							  mode='a',
+							  format='table',
+							  append= True,
+							  data_columns= ['sampleId','gene'])
+				except ValueError:
+					# occurs if the data file is malformed or missing
+					logging.warn("Data file could not be loaded; malformed {0}".format(inputfile))
+					print(df)
+					
 				nRead+=1
 				if nRead % 100 == 0:
-					logging.info("Added {0}".format(nRead))
+					logging.info("Read {0} per-gene report files".format(nRead))
 					
 				if nRead > max_files_analysed:
 					logging.warning("Stopped reading Kraken data as max_files_analysed was reached")
@@ -147,18 +162,21 @@ class AdaptiveMasking():
 			a data frame containing coefficients from the modelling.
 			This is also stored as self.coefficients, and can be exported to excel, csv etc.
 			"""
-			
+		
+		logging.info("Fitting models; reading Kraken data")	
 		# recovery kraken_pseudo, which contains the explanatory data
 		kraken_pseudo = pd.read_hdf(self.hdf_file, 'explan')
 		
 		# recover all genes in the database
+		logging.info("Fitting models; reading gene names")	
 		res = pd.read_hdf(self.hdf_file, 'model_input', columns=['gene'])
 		roi_names = res['gene'].unique()
 		n_rois = 0
-		for roi_name in roi_names:
+		for roi_name in roi_names:		# ['B55','rrs','rrl']:
 			
 			## construct a statistical model for each roi_name
-
+			logging.info("Modelling {0}".format(roi_name))
+			
 			# construct data frame for modelling
 			model_input = pd.read_hdf(self.hdf_file, 'model_input',  where='gene=="{0}"'.format(roi_name))
 			model_input = model_input[['sampleId','total_depth','total_nonmajor_depth']]
@@ -231,8 +249,8 @@ class AdaptiveMasking():
 				print("Fitting {0} #{1}".format(roi_name, n_rois))
 			
 			# debug
-			if n_rois > 50:
-				break
+			#if n_rois > 50:
+			#	break
 		
 		estimated_mixtures.to_hdf(self.hdf_file, 'model_output',
 						  mode='a',
@@ -240,20 +258,67 @@ class AdaptiveMasking():
 						  append= False)
 		self.coefficients = estimated_mixtures
 		return estimated_mixtures
+	def depict_model(self,
+					 clip_ci = 10):
+		""" depicts the coefficients fitted
 		
+			"""
+		self.coefficients = pd.read_hdf(self.hdf_file, 'model_output')
+		
+		# compute the minor variant frequency when the reference category is present ( <1% in our example)
+		# and the fold change (for the coefficients)
+		self.coefficients['exp_Estimate'] = [np.exp(x) for x in self.coefficients['Estimate']]
+		self.coefficients['log10_Estimate'] = [2.303*x for x in self.coefficients['Estimate']]
+				
+		# compute histograms
+		param_value = 'const'
+		these_coeffs = self.coefficients.query("parameter == '{0}'".format(param_value))			
+		print(these_coeffs)
+		hist,edges = np.histogram(self.coefficients['exp_Estimate'], bins=200)
+		print(hist)
+		print(edges)
+		
+		p1 = figure(title="Normal Distribution (?=0, ?=0.5)",tools="save",
+					background_fill_color="#E8DDCB")
+		p1.quad(top=hist, bottom=0, left=edges[:-1], right=edges[1:],
+        fill_color="#036564", line_color="#033649")
+		p1.legend.location = "center_right"
+		p1.legend.background_fill_color = "darkgrey"
+		p1.xaxis.axis_label = 'x'
+		p1.yaxis.axis_label = 'Pr(x)'
+		show(p1)
+		# sometimes, if model predictions are unstable, very wide CIs are generated.
+		# we generate new fields, clip_lower_ci and clip_upper_ci with abs(ci) = clip_ci for such unstable estimates.
+		# this helps depiction
+
+
+
+
+# create an AdaptiveMasking object measuring the amount of non-Mycobacterial bacterial DNA
+
+# you can read the results of a stored analysis
+am = AdaptiveMasking(
+	analysis_name = 'test1',
+	persistdir = os.path.join('..','modelling','tmp'),
+	genus_of_interest= 'Mycobacterium',
+	rebuild_databases_if_present  = False
+					)
+am.fit_model()
+am.depict_model()
+#
+exit()
+
 am = AdaptiveMasking(
 	analysis_name = 'test1',
 	persistdir = os.path.join('..','modelling','tmp'),
 	genus_of_interest= 'Mycobacterium'
 					)
+
+# read in kraken and region reports
 am.read_model_input(kraken_inputpath = os.path.join('..','modelling','kraken_reports','*.kraken_report'),
-				    region_inputpath = os.path.join('..','modelling','region_reports','*.tsv'),
-					max_files_analysed = 50
+				    region_inputpath = os.path.join('..','modelling','region_reports','*.tsv')
 					)
-coefficients = am.fit_model()
-print(coefficients)
-exit()
 
+# fit the model
+am.fit_model()
 
-
-print(estimated_mixtures)

@@ -24,16 +24,16 @@ Please see example code [illustrating of mapping and vcf generation](doc/map2vcf
 2. Estimating the amount of extraneous bacterial DNA present    
 One of the key findings from our paper is that mapping accuracy for some regions is determined by the amount of 'non-target' bacteria DNA present, in our case from species other than *Mycobacteria*.
 We estimated this using Kraken.  Newer [tools](https://ccb.jhu.edu/software/bracken/) producing data in a similar format can also be used. 
-Please see example code [illustrating the use of Kraken](doc/kraken.md). 
+Please see example code [illustrating the use of Kraken](doc/kraken.md), including the *KrakenReportReader* class from the *KrakenReportReader* module. 
 3. Determining the minor variant frequencies for genomic regions  
 We measured the minor variant frequencies, - that is, the read depth accounted for by calls other than the most common nucleotide - across genomic regions.
-Please see [here](doc/extractmaf.md), which describes the code we provided to do this.
+Please see [here](doc/extractmaf.md), which describes use of the *regionScan_from_genbank* class, which is in the *vcfScan* module.
 4. Modelling minor variant frequencies in reads mapped to genomic regions     
 Subsequently, we fitted Poisson models, region-by_region, estimating the relationship between the
 minor variant call depth (~ amount of mixture ) detected and an estimate of the amount of non-bacterial DNA present.
-A python class, AdaptiveMasking, is provided to do this, which is described [in detail](doc/model_maf.md)
+A python class, *AdaptiveMasking*, in the *AdaptiveMasking* module, is provided to do this.  Its use is described [in detail](doc/model_maf.md)
 5. Depicting the results of the modelling  
-Methods in the AdaptiveMasking allow depiction of model output, as [described](doc/depict.md).
+Methods in the *AdaptiveMasking* class allow depiction of model output, as [described](doc/depict.md).
 6. Masking based on the results  
 [What to do next](doc/next.md) 
 

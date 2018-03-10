@@ -345,7 +345,8 @@ class regionScan_from_genbank(vcfScan):
 				 genbank_file_name,
 				 method = 'CDS',
 				 expectedErrorRate = 0.001,
-				 infotag = 'BaseCounts4'):
+				 infotag = 'BaseCounts4',
+				 min_region_size = 15):
 		""" defines the regions to study based on a
 		genbank file.
 		
@@ -368,7 +369,10 @@ class regionScan_from_genbank(vcfScan):
 							 2001..2199 'near_G3'
 							 2200..3000 'G3'
 			* method = 'All' - annotate just one region, covering the entire genome.
-		
+		    * expectedErrorRate: the expected per-base error.  if q30 filters are use, the expectedErrorRate is <= 0.001.
+		    * infotag: the tag in the VCF INFO section containing the base counts to analyse.
+		    * min_region_size: the minimum size of a region.
+			                If regions identified are less than min_region_size in length, then they are combined with the next region.
 		Output:
 			Stores features in self.regions, as a Pandas dataframe.
 			The positions delivered are ** 1 indexed ** like the VCF file, not like BioPython
@@ -415,8 +419,9 @@ class regionScan_from_genbank(vcfScan):
 					current_start = min(nt)
 					current_end = max(nt)
 		
-					# if there is a gap between this and the previous feature, mark as an intergenic region;
-					if not current_start == previous_end +1:		# there's a gap				
+					# if there is a gap between this and the previous feature,
+					# then mark as an intergenic region;
+					if not current_start == previous_end +1:
 						feature_id +=1
 						feature_list.append({'id':feature_id, 'name':'near_'+cds_name,'start_pos':previous_end+1+1, 'end_pos':current_start-1+1})
 						
@@ -430,8 +435,30 @@ class regionScan_from_genbank(vcfScan):
 				feature_id +=1
 				feature_list.append({'id':feature_id, 'name':'near_end', 'start_pos':previous_end+1+1,  'end_pos':len(record.seq)})
 		
-			# define ROIs
-			for region in feature_list:
+			# now iterate over feature_list, merging any features with length < min_region_length
+			features_final = {}
+			features_merged ={}
+			for feat in feature_list:
+				if np.abs(feat['end_pos']-feat['start_pos']) < min_region_size:
+					features_merged[feat['id']] = feat
+				else:
+					features_final[feat['id']] = feat
+
+			for id in features_merged.keys():
+				merge_to = id
+				while merge_to>0:
+					merge_to = merge_to -1
+					if merge_to in features_final.keys():
+						features_final[merge_to]['start_pos'] = min(features_final[id-1]['start_pos'],features_merged[id]['start_pos'])
+						features_final[merge_to]['end_pos'] = max(features_final[id-1]['end_pos'],features_merged[id]['end_pos'])
+						if not features_final[merge_to]['name'][0:4] == 'incl':
+							features_final[merge_to]['name'] = 'incl_' + features_final[merge_to]['name']
+						break
+	
+			feature_list = []
+			for i in features_final.keys():
+				region = features_final[i]
+				feature_list.append(region)
 				self.add_roi(roi_name = region['name'], roi_positions = range(region['start_pos'], region['end_pos']+1))
 		
 		else:
@@ -439,7 +466,12 @@ class regionScan_from_genbank(vcfScan):
 		
 		# create an easy to display list of what we are studying
 		# Creating internal region spreadsheet.  Export as .regions.to_excel(filename)")
-		self.regions = pd.DataFrame.from_records(feature_list, index ='id')
+
+		
+		self.regions = pd.DataFrame.from_records(feature_list, index='id')
+		for i in self.regions.index:
+			self.regions.loc[i,'length']= np.abs(self.regions.loc[i,'end_pos']-self.regions.loc[i,'start_pos'])
+			self.regions.loc[i,'mid']= (self.regions.loc[i,'end_pos']+self.regions.loc[i,'start_pos'])	/2		
 
 		
 class test_vcfScan_1(unittest.TestCase):
@@ -500,14 +532,14 @@ class test_vcfScan_4(unittest.TestCase):
 		v.parse(vcffile = inputfile)
 		self.assertEqual(len(v.bases.index),6)
 
-class test_regionScan_1(unittest.TestCase):
+class test_regionScan_1a(unittest.TestCase):
 	def runTest(self):
 		
 		genbank_file_name = os.path.join("..", "testdata", "NC_0103971.1.gb")
 		if not os.path.exists(genbank_file_name):
 			self.fail("Input file does not exist.  Please see README.  You may need to install test data.")
-		rs = regionScan_from_genbank(genbank_file_name, method= 'CDS')
-		
+		rs = regionScan_from_genbank(genbank_file_name, method= 'CDS', min_region_size = 0)
+
 		self.assertTrue(isinstance(rs.regions, pd.DataFrame))
 		self.assertEqual(len(rs.regions.index), 9795)
 		
@@ -523,6 +555,35 @@ class test_regionScan_1(unittest.TestCase):
 		bases_expected = set(range(1,seqlen+1))
 		self.assertEqual(bases_expected, bases_covered)
 
+		n = len(rs.regions.query('length<15').index)
+		self.assertTrue(n>0)
+
+class test_regionScan_1b(unittest.TestCase):
+	def runTest(self):
+		
+		genbank_file_name = os.path.join("..", "testdata", "NC_0103971.1.gb")
+		if not os.path.exists(genbank_file_name):
+			self.fail("Input file does not exist.  Please see README.  You may need to install test data.")
+		rs = regionScan_from_genbank(genbank_file_name, method= 'CDS', min_region_size=15)
+		
+		self.assertTrue(isinstance(rs.regions, pd.DataFrame))
+		self.assertTrue(len(rs.regions.index)< 9795)
+		
+		# check nothing is missing from our regions, and nothing is covered twice
+		bases_covered = set()
+		for i in rs.regions.index:
+			nt = range(rs.regions.loc[i,'start_pos'], rs.regions.loc[i,'end_pos']+1)
+			for pos in nt:
+				#if pos in bases_covered:
+				#	self.fail("Duplicate base (overlapping regions) {0}".format(pos))		#overlapping cds actually exist, e.g. 4275
+				bases_covered.add(pos)
+		seqlen = 5067172
+		bases_expected = set(range(1,seqlen+1))
+		self.assertEqual(bases_expected, bases_covered)
+		n = len(rs.regions.query('length<15').index)
+		self.assertTrue(n == 0)
+		print(rs.regions)
+		
 class test_regionScan_2(unittest.TestCase):
 	def runTest(self):
 		

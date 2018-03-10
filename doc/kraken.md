@@ -18,7 +18,7 @@ kraken-report.o --db /mnt/microbio/pipeline/KRAKEN/kraken_full_18012016_added_25
 The KrakenReportReader class will summarise data from Kraken/Braken reports.
 Please see the documentation in the KrakenReportReader module for more information.
 
-```
+```python
 from KrakenReportReader import KrakenReportReader
 
 # example usage
@@ -28,3 +28,7 @@ result = krr.simplify(inputfile= inputfile, guid = 'test1')
 
 
 ```
+
+### Command line usage
+See above for detail of how to use kraken.  
+The *KrakenReportReader* class is used by the *AdaptiveMasking* class.  You do not need to use it directly. See [here](model_maf.md).

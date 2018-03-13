@@ -10,9 +10,14 @@ Their data indicates that compared with the full database, this mini-database ha
 Example usage is as follows:
 
 ```
-kraken --threads 1 --preload --db /mnt/microbio/pipeline/KRAKEN/kraken_full_18012016_added_25 --fasta-input /dev/fd/0
-kraken-filter.o --threads 1 --db /mnt/microbio/pipeline/KRAKEN/kraken_full_18012016_added_25 --threshold 0.05
-kraken-report.o --db /mnt/microbio/pipeline/KRAKEN/kraken_full_18012016_added_25
+kraken --threads 1 \
+--preload --db /mnt/microbio/pipeline/KRAKEN/kraken_full_18012016_added_25 \
+--fastq-input --paired testdata/in.r1.fq testdata/in.r2.fq |
+kraken-filter --db \
+/mnt/microbio/pipeline/KRAKEN/kraken_full_18012016_added_25 --threshold 0.05 > testdata/in.kraken.txt
+
+kraken-report --db /mnt/microbio/pipeline/KRAKEN/kraken_full_18012016_added_25 \
+testdata/in.kraken.txt > testdata/in.kraken.report.txt
 ```
 
 The KrakenReportReader class will summarise data from Kraken/Braken reports.

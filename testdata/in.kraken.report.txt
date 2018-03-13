@@ -1,0 +1,24 @@
+ 20.55	30	30	U	0	unclassified
+ 79.45	116	0	-	1	root
+ 79.45	116	0	-	131567	  cellular organisms
+ 79.45	116	0	D	2	    Bacteria
+ 76.71	112	0	P	201174	      Actinobacteria
+ 76.71	112	0	C	1760	        Actinobacteria
+ 76.03	111	0	O	85007	          Corynebacteriales
+ 76.03	111	0	F	1762	            Mycobacteriaceae
+ 76.03	111	5	G	1763	              Mycobacterium
+ 72.60	106	106	-	77643	                Mycobacterium tuberculosis complex
+  0.68	1	0	O	85006	          Micrococcales
+  0.68	1	0	F	1268	            Micrococcaceae
+  0.68	1	0	G	32207	              Rothia
+  0.68	1	0	S	43675	                Rothia mucilaginosa
+  0.68	1	1	-	680646	                  Rothia mucilaginosa DY-18
+  2.74	4	0	P	1239	      Firmicutes
+  2.74	4	0	C	91061	        Bacilli
+  2.74	4	0	O	186826	          Lactobacillales
+  2.74	4	0	F	1300	            Streptococcaceae
+  2.74	4	1	G	1301	              Streptococcus
+  1.37	2	0	S	1305	                Streptococcus sanguinis
+  1.37	2	2	-	388919	                  Streptococcus sanguinis SK36
+  0.68	1	0	S	1303	                Streptococcus oralis
+  0.68	1	1	-	927666	                  Streptococcus oralis Uo5

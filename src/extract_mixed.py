@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """ extracts variation from regions within vcf files.
 
-Is a command line wrapper fro regionScan_from_genbank
+Is a command line wrapper for regionScan_from_genbank
 
 Example usage:
 python extract_mixed.py --help

@@ -14,7 +14,7 @@ Upstream bioinformatics software (Kraken, Stampy, Bowtie, samtools/bcftools) hav
 [Stampy v1.0](http://www.well.ox.ac.uk/project-stampy), a mapper  
 [Bowtie v2.3.4.1](https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.3.4.1), an alternative mapper  
 [bcftools](http://www.htslib.org/doc/bcftools.html), for vcf/bcf manipulation   
-[samtools](http://www.htslib.org/doc/samtools.html), for vcf/bcf manipulation
+[samtools](http://www.htslib.org/doc/samtools.html), for vcf/bcf manipulation  
 [python v3.5.2](https://www.python.org/downloads/)      
 The software is not expected to work with python 2.7.
 Although the paper used R from some analyses, in these have all been ported to Python in the software released here.

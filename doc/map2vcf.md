@@ -29,6 +29,20 @@ watch tail map.out
 
 ```
 
+A similar script using Stampy is also provided.  This is useful if you wish to compare stampy vs. bowtie,
+but if you are testing the complete process then bowtie is a quicker option.
+```
+cd pipeline/testdata
+chmod +x map_with_stampy.sh
+
+# recommend running with nohup, as it will take several hours depending on the architecture
+# note: the shell script check for output files; it will not rerun analyses
+nohup ./map_with_stampy.sh >stamp.out 2>stamp.err &
+watch tail stamp.out
+
+```
+
+
 
 
 

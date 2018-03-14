@@ -2,7 +2,12 @@
 echo Getting kraken
 wget https://ccb.jhu.edu/software/kraken/dl/kraken-1.0.tgz
 tar -xvf kraken-1.0.tgz
+cd kraken-1.0/src
+make
+cp kmer_estimator ../scripts
+cp classify ../scripts
 
+cd ../..
 echo Getting Samtools
 wget https://github.com/samtools/samtools/releases/download/1.7/samtools-1.7.tar.bz2
 tar -xvf samtools-1.7.tar.bz2

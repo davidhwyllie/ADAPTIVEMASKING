@@ -14,10 +14,13 @@ Upstream bioinformatics software (Kraken, Stampy, Bowtie, samtools/bcftools) hav
 [Stampy v1.0](http://www.well.ox.ac.uk/project-stampy), a mapper  
 [Bowtie v2.3.4.1](https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.3.4.1), an alternative mapper  
 [bcftools](http://www.htslib.org/doc/bcftools.html), for vcf/bcf manipulation   
+[samtools](http://www.htslib.org/doc/samtools.html), for vcf/bcf manipulation
+bedtools (for bam to fastq conversion, if mapping using test data).  The test scripts assume this is on the path.
 [python v3.5.2](https://www.python.org/downloads/)      
 
-No testing has been done with earlier versions.  The software is not expected to work with python 2.7.
-Although the paper used R from some analyses, in these have all been ported to Python.
+
+The software is not expected to work with python 2.7.
+Although the paper used R from some analyses, in these have all been ported to Python in the software released here.
 
 ### Python packages
 The following modules which are not part of the python3 standard library are required
@@ -38,6 +41,15 @@ The following modules which are not part of the python3 standard library are req
 On Windows systems, we used the numpy+mkl windows binaries [available here](https://www.lfd.uci.edu/~gohlke/pythonlibs/).
 On both platforms, we installed all other dependencies using pip3.
 
+## Getting software
+This can be installed automatically on linux systems.  The below script will also download a minikraken database.
+```
+cd pipeline/software
+chmod +x get_software
+./get_software.sh
+```
+
+See the /pipeline/software directory
 ## Test data
 Some test data is supplied when cloning the github repository, but some test files (including vcf files) are too large to be installed from github.
 You can obtain this data as below:

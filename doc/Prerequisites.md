@@ -6,7 +6,7 @@ We have tested the python components which we have written on
 * Ubuntu 16.04 LTS.
 Both platforms had >=16GB RAM. 
 
-Upstream bioinformatics software (Kraken, Stampy, Bowtie, samtools/bcftools) have only been tested on linux.
+Upstream bioinformatics software (Kraken, Stampy, Bowtie, samtools/bcftools) have been tested on Ubuntu linux 16.04LTS.
 
 ## Software
 ### External tools
@@ -15,10 +15,7 @@ Upstream bioinformatics software (Kraken, Stampy, Bowtie, samtools/bcftools) hav
 [Bowtie v2.3.4.1](https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.3.4.1), an alternative mapper  
 [bcftools](http://www.htslib.org/doc/bcftools.html), for vcf/bcf manipulation   
 [samtools](http://www.htslib.org/doc/samtools.html), for vcf/bcf manipulation
-bedtools (for bam to fastq conversion, if mapping using test data).  The test scripts assume this is on the path.
 [python v3.5.2](https://www.python.org/downloads/)      
-
-
 The software is not expected to work with python 2.7.
 Although the paper used R from some analyses, in these have all been ported to Python in the software released here.
 
@@ -41,8 +38,8 @@ The following modules which are not part of the python3 standard library are req
 On Windows systems, we used the numpy+mkl windows binaries [available here](https://www.lfd.uci.edu/~gohlke/pythonlibs/).
 On both platforms, we installed all other dependencies using pip3.
 
-## Getting software
-This can be installed automatically on linux systems.  The below script will also download a minikraken database.
+## Getting software for an end-to-end demonstration of the process
+This can be installed automatically on linux systems.  The below script will also download a 4GB minikraken database.  Please edit the script if you do not require this.
 ```
 cd pipeline/software
 chmod +x get_software
@@ -51,10 +48,23 @@ chmod +x get_software
 
 See the /pipeline/software directory
 ## Test data
-Some test data is supplied when cloning the github repository, but some test files (including vcf files) are too large to be installed from github.
+Some test data is supplied when cloning the github repository, but 
+* vcf files used for unit testing
+* fastq.gz files used as input to the end-to-end demonstration
+  are too large to be installed from github.
 You can obtain this data as below:
+
+### test data for unit testing
 ```
 cd testdata
+wget ****
+gunzip *
+
+```
+
+### input data for an end-to-end demonstration
+```
+cd pipeline/testdata
 wget ****
 gunzip *
 

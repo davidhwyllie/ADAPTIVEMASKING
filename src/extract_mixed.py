@@ -49,7 +49,7 @@ if __name__ == '__main__':
         guid=os.path.basename(inputfile)[0:36]
         
         # test whether the file has already been parsed
-        targetfile = os.path.join(args.outputdir,'{0}.txt'.format(guid))
+        targetfile = os.path.join(args.outputdir,'{0}.regionstats.txt'.format(guid))
         if os.path.exists(targetfile):
             print('{0} Target file exists {1}; skipped processing'.format(guid, targetfile))
     

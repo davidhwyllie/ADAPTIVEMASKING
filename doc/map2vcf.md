@@ -5,7 +5,7 @@ We provide an example script mapping fifty fastq files, obtained from a clinical
 *1 Obtain the test data and software*    
 The software required and test data can be obtained as [described](Prerequisites.md)
 
-*2 Ensure mapper libraries are present    
+*2 Ensure mapper libraries are present*    
 Mapper libraries need to be generated in the mapto directory.  
 The following should create both stampy and bowtie libraries.  
   
@@ -30,12 +30,12 @@ watch tail map.out
 ```
 
 A similar script using Stampy is also provided.  This is useful if you wish to compare stampy vs. bowtie,
-but if you are testing the complete process then bowtie is a quicker option.
+but if you are testing the complete process then bowtie is a *much* quicker option.
 ```
 cd pipeline/testdata
 chmod +x map_with_stampy.sh
 
-# recommend running with nohup, as it will take several hours depending on the architecture
+# recommend running with nohup, as it will take ~1hr per sample depending on the architecture
 # note: the shell script check for output files; it will not rerun analyses
 nohup ./map_with_stampy.sh >stamp.out 2>stamp.err &
 watch tail stamp.out

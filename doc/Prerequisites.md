@@ -28,6 +28,11 @@ The following modules which are not part of the python3 standard library are req
 [tables](https://www.pytables.org/) (tested with 3.1)  
 [Biopython](http://biopython.org/) (tested with 1.7.0)
 
+If they are not present, they can be installed using commands similar to
+```
+sudo pip3 install tables
+```
+
 *for fitting regression models*  
 [statsmodels](http://www.statsmodels.org/stable/index.html) (tested with 0.8)
 

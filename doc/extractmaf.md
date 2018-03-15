@@ -154,6 +154,6 @@ A freestanding script suitable for command line use, extract_mixed.py, is also a
 Please see the documentation in the file for command line options.  The following command would do the same as the example above:
 
 ```
-python extract_mixed.py ../testdata/NC_000962.3.gb ../testdata/*v3.vcf.gz BaseCounts4 ../output
+python3 extract_mixed.py ../testdata/NC_000962.3.gb ../testdata/*v3.vcf.gz BaseCounts4 ../output
 
 ```

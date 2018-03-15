@@ -36,7 +36,7 @@ chmod +x *.sh
 # path to vcf files is as shown (quotes essential - or linux expands the path, which is not wanted)
 # AD is the tag to use
 # ../output is the target directory
-python3 ../../src/extract_mixed.py ../../testdata/NC_000962.3.gb "*/*.stampy.vcf.gz" AD ../output
+nohup python3 ../../src/extract_mixed.py ../../testdata/NC_000962.3.gb "*/*.bowtie.vcf.gz" AD ../output/bowtie > exmix.out 2>exmix.err &
  
 ```
 __Overview of the process followed__  

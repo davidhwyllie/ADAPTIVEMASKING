@@ -16,7 +16,6 @@ import argparse
 from vcfScan import regionScan_from_genbank
 
 if __name__ == '__main__':
-
     # parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('genbank_file_name', help='the path to a genbank format file containing details of the reference genome mapped to')

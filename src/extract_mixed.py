@@ -16,6 +16,7 @@ import argparse
 from vcfScan import regionScan_from_genbank
 
 if __name__ == '__main__':
+
     # parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('genbank_file_name', help='the path to a genbank format file containing details of the reference genome mapped to')
@@ -31,7 +32,7 @@ if __name__ == '__main__':
     
     # identify the genbank file of interest
     print("Extracting features from genbank file {0}".format(args.genbank_file_name))
-    rs = regionScan_from_genbank(args.genbank_file_name, method = 'CDS')
+    rs = regionScan_from_genbank(args.genbank_file_name, method = 'CDS', infotag=args.infotag)
     print("Feature extraction complete")	
     
     # export the extracted CDs to excel;

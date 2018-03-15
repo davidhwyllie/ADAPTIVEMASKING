@@ -1,4 +1,5 @@
 #!/bin/sh
+# run kraken across fastq.gz files
 # start in testdata;
 cd ../testdata
 
@@ -9,44 +10,37 @@ REFFASTA=../../../testdata/NC_000962.3.fasta
 
 echo 'Starting Kraken'
 
-for dir in *
+for dir in $(ls */ -d)
 do
-    GUID=${dir%*/}
+    GUID=$(echo ${dir} | sed 's/.$//')
     echo Analysing: ${GUID}
-    if [ -d $GUID ]; then
-        cd ${GUID}
-        INPUTFILE=${GUID}.fq
-        TARGETFILE=${GUID}.kraken.report.txt
-        if [ -f ${TARGETFILE} ]; then
-                echo 'Skipping; analysis already done'
-        else
 
-		if [ -f ${INPUTFILE}.gz ]; then
-			echo 'fastq.gz read file found; unzipping'
-                	gunzip ${INPUTFILE}.gz --to-stdout > ${INPUTFILE}
-	                ${KRAKENSRCDIR}kraken --threads 1 \
+    cd ${GUID}
+    INPUTFILE=${GUID}.fq
+    TARGETFILE=${GUID}.kraken.report.txt
+    if [ -f ${TARGETFILE} ]; then
+        echo 'Skipping; analysis already done'
+    else
+	if [ -f ${INPUTFILE}.gz ]; then
+		echo 'fastq.gz read file found; unzipping'
+               	gunzip ${INPUTFILE}.gz --to-stdout > ${INPUTFILE}
+	        ${KRAKENSRCDIR}kraken --threads 1 \
 --preload --db $KRAKENDB \
 --fastq-input $INPUTFILE |
 kraken-filter --db \
 $KRAKENDB --threshold 0.05 > ${GUID}.kraken.txt
 
-			kraken-report --db $KRAKENDB \
+		kraken-report --db $KRAKENDB \
 ${GUID}.kraken.txt > ${TARGETFILE}
-			# remove the temporary decompressed file
-                	rm -f ${INPUTFILE}
+		# remove the temporary decompressed file
+               	rm -f ${INPUTFILE}
 
-		else
-			echo ${INPUTFILE}.gz not found
-                	exit 1
-	        fi
-        fi	
-    else
-		echo Skipping $GUID as not a directory
+	else
+		echo ${INPUTFILE}.gz not found
+               	exit 1
+	fi
     fi
     cd ..
 done
 
 exit 0
-
-
-

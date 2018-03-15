@@ -13,6 +13,32 @@ between Mycobacteria and other bacterial species, and was detected when laborato
 __Obtain software and test data__   
 The software needed, and instructions on how to obtain test data, is described [here](doc/Prerequisites.md).  
 
+__Quick start__  
+A demonstration of the end-to-end process using test data.
+ 
+```
+# start in the directory into which the project is cloned
+# make scripts executable
+cd pipeline/testdata
+chmod +x *.sh
+
+# step 1: mapping & vcf generation
+./map_with_bowtie.sh
+
+# optional alternative using nohup
+# nohup ./map_with_bowtie.sh > bowtie.out 2>bowtie.err &
+
+# step 2: run Kraken on samples
+./run_kraken.sh
+
+# step 3: determine minor allele frequencies
+# reference genome is NC_000962
+# path to vcf files is as shown (quotes essential - or linux expands the path, which is not wanted)
+# AD is the tag to use
+# ../output is the target directory
+python3 ../../src/extract_mixed.py ../../testdata/NC_000962.3.gb "*/*.stampy.vcf.gz" AD ../output
+ 
+```
 __Overview of the process followed__  
 1. Mapping and VCF generation  
 Our approach is designed to operate on the output from multiple mappers, with different settings, and with different kinds of input data.

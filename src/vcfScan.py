@@ -177,6 +177,7 @@ class vcfScan():
 		nAdded = 0						
 		self.region_stats = None		 
 		self.bases = None
+		warning_emitted = False
 		
 		# transparently handle vcf.gz files.
 		if vcffile.endswith('.gz'):
@@ -190,7 +191,8 @@ class vcfScan():
 
 		try:
 			sought_now = sought_psns.popleft()
-
+			if sought_now == 0:
+				warning.warn("Asked to estimate mixtures for base 0.  Positions should be 1 -indexed")
 			# iterate over the vcf file
 			for line in f:
 
@@ -207,18 +209,21 @@ class vcfScan():
 				chrom, pos, varID, ref, alts, score, filterx, infos, fields, sampleInfo = line.strip().split()
 				pos = int(pos)
 				
-				# the current position (pos) should be <= sought_now.
-				# if it is not, something has gone wrong.
-
+				# the current position (pos) should be <= sought_now
+				# if all bases in the vcf are called.
+				# if they are not, then we need to 'catch up' and find the next
+				# sought_now position after or at the current vcf scan position, pos
 				if not pos<=sought_now:
-					logging.warn("pos is not less than or equal to sought_now: {0} {1}; resetting.  This should not occur if samtools mpileup is run with -aa.".format(pos, sought_now))
+					if warning_emitted is False:
+						logging.warn("Note: not all positions are called in vcf file: gap observed nr bases {1}..{0}; adjusting scan.  Results should not be affected.  Recommend use of samtools mpileup --aa option to avoid this.".format(pos, sought_now))
+						logging.warn("Note: subsequent similar warnings will not be shown.")
+						warning_emitted=True
 					while sought_now <= pos:
 							try:
 								sought_now = sought_psns.popleft()
 							except IndexError:		# no more positions defined for selection; this is allowed
 								# we're out of positions
 								sought_now = 1e12 	# bigger than any genome; will never get there
-								
 								
 				if pos == sought_now:
 					# we are looking for a position in the vcf file, and we have found it;

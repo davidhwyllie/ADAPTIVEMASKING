@@ -207,15 +207,21 @@ class vcfScan():
 				chrom, pos, varID, ref, alts, score, filterx, infos, fields, sampleInfo = line.strip().split()
 				pos = int(pos)
 				
-				# the position should be <= sought_now.
+				# the current position (pos) should be <= sought_now.
 				# if it is not, something has gone wrong.
 
 				if not pos<=sought_now:
-					raise ValueError("pos is not less than or equal to sought_now: {0} {1}".format(pos, sought_now))
-
-				# we are looking for a position in the vcf file, and we have found it;
+					logging.warn("pos is not less than or equal to sought_now: {0} {1}; resetting.  This should not occur if samtools mpileup is run with -aa.".format(pos, sought_now))
+					while sought_now <= pos:
+							try:
+								sought_now = sought_psns.popleft()
+							except IndexError:		# no more positions defined for selection; this is allowed
+								# we're out of positions
+								sought_now = 1e12 	# bigger than any genome; will never get there
+								
+								
 				if pos == sought_now:
-
+					# we are looking for a position in the vcf file, and we have found it;
 					alts = alts.split(",")
 					infos = dict(item.split("=") for item in infos.split(";"))
 
@@ -381,7 +387,7 @@ class regionScan_from_genbank(vcfScan):
 				 genbank_file_name,
 				 method = 'CDS',
 				 expectedErrorRate = 0.001,
-				 infotag = 'BaseCounts4',
+				 infotag = 'auto',
 				 min_region_size = 15):
 		""" defines the regions to study based on a
 		genbank file.

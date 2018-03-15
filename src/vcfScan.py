@@ -215,7 +215,7 @@ class vcfScan():
 				# sought_now position after or at the current vcf scan position, pos
 				if not pos<=sought_now:
 					if warning_emitted is False:
-						logging.warn("Note: not all positions are called in vcf file: gap observed nr bases {1}..{0}; adjusting scan.  Results should not be affected.  Recommend use of samtools mpileup --aa option to avoid this.".format(pos, sought_now))
+						logging.warn("Note: not all positions are called in vcf file: gap observed nr bases {1}..{0}; adjusting scan.  Results should not be affected.".format(pos, sought_now))
 						logging.warn("Note: subsequent similar warnings will not be shown.")
 						warning_emitted=True
 					while sought_now <= pos:
@@ -456,13 +456,31 @@ class regionScan_from_genbank(vcfScan):
 
 			for feature in record.features:
 				if feature.type == 'CDS':
-	
-					featname = feature.qualifiers.get('locus_tag')
+					try:
+						gene_name = feature.qualifiers['gene']
+					except KeyError:		# no gene qualifier
+						gene_name = None
+					try:
+						locus_tag = feature.qualifiers['locus_tag']
+					except KeyError:		# no locus_tag qualifier
+						locus_tag = None
+					if locus_tag is None and gene_name is None:
+						featname = 'None provided'
+					elif locus_tag is None and gene_name is not None:
+							featname= gene_name[0]
+					elif locus_tag is not None and gene_name is None:
+							featname = locus_tag[0]
+					else:
+							featname = "{0} ({1})".format(gene_name[0], locus_tag[0])
+
+
+					print(featname)
+					
 					nt = set()
 					for location in feature.location:		# iterates over each base
 						nt.add(location)
 					
-					cds_name = featname[0]	
+					cds_name = featname
 					current_start = min(nt)
 					current_end = max(nt)
 		
@@ -665,6 +683,33 @@ class test_regionScan_1b(unittest.TestCase):
 		n = len(rs.regions.query('length<15').index)
 		self.assertTrue(n == 0)
 		#print(rs.regions)
+
+class test_regionScan_1c(unittest.TestCase):
+	def runTest(self):
+		
+		genbank_file_name = os.path.join("..", "testdata", "NC_000962.3.gb")
+		if not os.path.exists(genbank_file_name):
+			self.fail("Input file does not exist.  Please see README.  You may need to install test data.")
+		rs = regionScan_from_genbank(genbank_file_name, method= 'CDS', min_region_size = 15)
+
+		self.assertTrue(isinstance(rs.regions, pd.DataFrame))
+		self.assertEqual(len(rs.regions.index), 6529)
+		print(rs.regions)
+		exit()
+		# check nothing is missing from our regions, and nothing is covered twice
+		bases_covered = set()
+		for i in rs.regions.index:
+			nt = range(rs.regions.loc[i,'start_pos'], rs.regions.loc[i,'end_pos']+1)
+			for pos in nt:
+				#if pos in bases_covered:
+				#	self.fail("Duplicate base (overlapping regions) {0}".format(pos))		#overlapping cds actually exist, e.g. 4275
+				bases_covered.add(pos)
+		seqlen = 5067172
+		bases_expected = set(range(1,seqlen+1))
+		self.assertEqual(bases_expected, bases_covered)
+
+		n = len(rs.regions.query('length<15').index)
+		self.assertTrue(n>0)
 		
 class test_regionScan_2(unittest.TestCase):
 	def runTest(self):

@@ -23,19 +23,22 @@ cd pipeline/testdata
 chmod +x *.sh
 
 # step 1: mapping & vcf generation
-./map_with_bowtie.sh
-
+./map_with_bowtie.sh        # takes about 90 mins for 50 samples on our hardware
 # optional alternative using nohup
 # nohup ./map_with_bowtie.sh > bowtie.out 2>bowtie.err &
 
 # step 2: run Kraken on samples
-./run_kraken.sh
+./run_kraken.sh             # takes about 50 minutes for 50 samples on our hardware
 
 # step 3: determine minor allele frequencies
 # reference genome is NC_000962
 # path to vcf files is as shown (quotes essential - or linux expands the path, which is not wanted)
 # AD is the tag to use
 # ../output is the target directory
+# takes about 60 minutes for 50 samples on our hardware
+python3 ../../src/extract_mixed.py ../../testdata/NC_000962.3.gb "*/*.bowtie.vcf.gz" AD ../output/bowtie
+ 
+# alternative option using nohup
 nohup python3 ../../src/extract_mixed.py ../../testdata/NC_000962.3.gb "*/*.bowtie.vcf.gz" AD ../output/bowtie > exmix.out 2>exmix.err &
  
 ```

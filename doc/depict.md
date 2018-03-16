@@ -11,11 +11,10 @@ from AdaptiveMasking import AdaptiveMasking
 # critical: set rebuild_databases_if_present  = False,
 # or the existing data will be overwritten
 am = AdaptiveMasking(
-	analysis_name = 'test1',
-	persistdir = os.path.join('..','modelling','tmp'),
-	genus_of_interest= 'Mycobacterium',
+	analysis_name = 'bowtie',
+	persistdir = os.path.join('..','output','bowtie'),
 	rebuild_databases_if_present  = False
-					)
+)
 
 ```
 

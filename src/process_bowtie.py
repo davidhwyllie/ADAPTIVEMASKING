@@ -16,12 +16,12 @@ am = AdaptiveMasking(
 	)
 
 print("Extracting region statistics from VCF files")
-am.extract_model_input(vcf_inputpath=os.path.join('..','*.bowtie.vcf.gz')
+am.extract_model_input(vcf_inputpath=os.path.join('*','*.bowtie.vcf.gz'))
 					   
 print("Reading in Kraken and vcf result files")
-am.fit_model()
-
-print("Depicting model")
 am.read_model_input(kraken_inputpath = os.path.join('*','*.kraken.txt'),
 				    region_inputpath = os.path.join('..','output','bowtie','*.regionstats.txt')
 	)
+
+print("Fitting model")
+am.fit_model()

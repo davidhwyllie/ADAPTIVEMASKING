@@ -96,11 +96,50 @@ class AdaptiveMasking():
 			# TODO: make a new HDF
 			regions =  pd.read_hdf(self.hdf_file, 'regions')
 			self.rs = regionScan_from_genbank(genbank_file_name=regions)
-			print(self.rs.regions)
-			print(type(self.rs.regions))
-			print(self.rs.regions.columns.values.tolist())
-			exit()
+
 		return None	
+	def extract_model_input(self,
+						 vcf_inputpath,
+						 max_files_analysed = 1e8
+						):
+		""" analyses vcf files found on vcf_inputpath and writes the region summaries to persistdir.
+		
+		wraps regionScan_from_genbank.
+		
+		Arguments:
+				region_inputpath: a path which when globbed yields vcf files for analysis.
+				max_files_analysed: the maximum number of files which will be analysed.  Useful only for debugging/demos.
+				
+		Returns:
+				none
+				Output is written to persistdir.
+		"""
+		
+		# identify files to process
+		inputfiles = glob.glob(vcf_inputpath)
+		logging.info("Found {0} input files".format(len(inputfiles)))
+		nRead=0
+		
+		for inputfile in inputfiles:
+			guid=os.path.basename(inputfile)[0:36]
+			
+			# test whether the file has already been parsed
+			targetfile = os.path.join(self.persistdir,'{0}.regionstats.txt'.format(guid))
+			if os.path.exists(targetfile):
+				print('{0} Target file exists {1}; skipped processing'.format(guid, targetfile))
+		
+			else:
+				logging.info("Examining file {0} ".format(guid))
+				res = self.rs.parse(vcffile = inputfile, guid= guid)
+				self.rs.region_stats.to_csv(targetfile)
+
+				nRead+=1
+				if nRead % 5== 0:
+					logging.info("Read {0} per-gene report files".format(nRead))
+					
+				if nRead > max_files_analysed:
+					logging.warning("Stopped parsing as max_files_analysed was reached")
+					break
 	def read_model_input(self,
 						 kraken_inputpath,
 						 region_inputpath = os.path.join('..','modelling','region_reports','*.tsv'),
@@ -192,6 +231,7 @@ class AdaptiveMasking():
 				if nRead > max_files_analysed:
 					logging.warning("Stopped reading Kraken data as max_files_analysed was reached")
 					break
+
 	def fit_model(self):
 		""" fits poisson regression model relating the
 		minor variant frequency to the amount of non-target bacterial DNA
@@ -300,13 +340,12 @@ class AdaptiveMasking():
 		self.coefficients = estimated_mixtures
 		return estimated_mixtures
 	def depict_model(self,
-					 genbank_file_name,
 					 exclude_estimates_over = 10000):
 		
 		""" depicts the coefficients fitted.
 		
 			Arguments:
-				genbank_file_name: the name of the genbank file used to define regions.
+				
 				exclude_estimates_over:  will not plot parameter estimates more than this number.
 				In this setting, the background rate of mixtures is about 0.001 and the
 				'estimate' referred to is an incidence rate ratio relative to the background rate;
@@ -318,14 +357,16 @@ class AdaptiveMasking():
 		
 		# read region annotation from genbank entry
 
-		
-		self.coefficients = pd.read_hdf(self.hdf_file, 'model_output')
-		
+		try:
+			self.coefficients = pd.read_hdf(self.hdf_file, 'model_output')
+		except KeyError:
+			raise KeyError("Attempted to read model output from file {0} but no model output is present.  you need to fit the model using .fit_model() before attempting to depict the output".format(self.hdf_file))
+
 		# get the parameters modelled
 		param_values = self.coefficients['parameter'].unique()
 		highest_test_cat = max(set(param_values)-set(['const']))
 
-		# compute the IRR? fold change (for the coefficients)
+		# compute the IRR/ fold change (for the coefficients)
 		self.coefficients['exp_Estimate'] = [np.exp(x) for x in self.coefficients['Estimate']]
 		self.coefficients['log10_Estimate'] = [2.303*x for x in self.coefficients['Estimate']]
 
@@ -336,7 +377,7 @@ class AdaptiveMasking():
 		df1 = df1.rename({'exp_Estimate':'hi'}, axis=1)
 		df2 = df2.rename({'exp_Estimate':'const'}, axis=1)
 		bivar = df1.merge(df2, how = 'inner', on= 'roi_name')
-		bivar = bivar.merge(regions, how = 'inner', on= 'roi_name')
+		bivar = bivar.merge(self.rs.regions, how = 'inner', on= 'roi_name')
 
 		bivar_source= ColumnDataSource(bivar)
 		bivar_tools = "save,reset,box_zoom,zoom_in,zoom_out,pan,tap,box_select"

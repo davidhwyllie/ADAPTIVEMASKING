@@ -209,7 +209,8 @@ class AdaptiveMasking():
 		inputfiles = glob.glob(region_inputpath)
 		for inputfile in inputfiles:
 			df = pd.read_csv(inputfile, sep='\t')
-			guid = df['sampleId'].unique()[0]
+			guid = basename(inputfile)[0:38]
+			df['sampleId']= guid
 		
 			if guid in kraken_sampleIds:		# if there is a kraken report
 				# read into database
@@ -246,7 +247,10 @@ class AdaptiveMasking():
 		
 		logging.info("Fitting models; reading Kraken data")	
 		# recovery kraken_pseudo, which contains the explanatory data
-		kraken_pseudo = pd.read_hdf(self.hdf_file, 'explan')
+		try:
+			kraken_pseudo = pd.read_hdf(self.hdf_file, 'explan')
+		except KeyError:
+			raise KeyError("Tried and failed to read Kraken data.  You must load Kraken data with .read_model_input() before fitting models.")
 		
 		# recover all genes in the database
 		logging.info("Fitting models; reading gene names")	

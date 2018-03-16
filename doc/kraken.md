@@ -1,7 +1,7 @@
 # Running Kraken
 
 ## Background
-[Kraken](https://ccb.jhu.edu/software/kraken/) is a metagenomic classifier which assigns reads to taxa based on a dictionary.  
+[Kraken](https://ccb.jhu.edu/software/kraken/) is a metagenomic classifier which assigns reads to taxa based on a database.  
 For the publication, we used a custom database constructed from bacterial RefSeq in Genbank, plus a  human genomic build.  
 Instructions on how to build this database are in Methods.
 
@@ -38,7 +38,7 @@ chmod +x run_kraken.sh
 # recommend running with nohup, as it will take 15-30 minutes depending on the architecture used.
 # note: the shell script checks for output files; it will not rerun analyses
 nohup ./run_kraken.sh > krak.out 2> krak.err &
-watch krak.out
+watch tail krak.out
 
 ```
 
@@ -57,5 +57,5 @@ result = krr.simplify(inputfile= inputfile, guid = 'test1')
 
 
 ```
-
+## End-to-end operation
 The *KrakenReportReader* class is used by the *AdaptiveMasking* class.  You do not need to use it directly. See [here](model_maf.md).

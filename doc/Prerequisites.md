@@ -15,9 +15,13 @@ Upstream bioinformatics software (Kraken, Stampy, Bowtie, samtools/bcftools) hav
 [Bowtie v2.3.4.1](https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.3.4.1), an alternative mapper  
 [bcftools](http://www.htslib.org/doc/bcftools.html), for vcf/bcf manipulation   
 [samtools](http://www.htslib.org/doc/samtools.html), for vcf/bcf manipulation  
-[python v3.5.2](https://www.python.org/downloads/)      
-The software is not expected to work with python 2.7.
-Although the paper used R from some analyses, in these have all been ported to Python in the software released here.
+[python v3.5.2](https://www.python.org/downloads/)
+
+Notes:  
+* a script to obtain these dependencies is [available](../pipeline/get_software.sh) (see also below).
+* the test data set does not require any tools, except python, to be on the PATH
+* The software is not expected to work with python 2.7.
+* Although the paper used R from some analyses, in these have all been ported to Python in the software released here.
 
 ### Python packages
 The following modules which are not part of the python3 standard library are required
@@ -38,7 +42,6 @@ sudo pip3 install tables
 
 *for visualisation of output*  
 [bokeh](https://bokeh.pydata.org/en/latest/) (tested with 0.12.14)
-
 
 On Windows systems, we used the numpy+mkl windows binaries [available here](https://www.lfd.uci.edu/~gohlke/pythonlibs/).
 On both platforms, we installed all other dependencies using pip3.
@@ -64,7 +67,6 @@ You can obtain this data as below:
 cd testdata
 wget ****
 gunzip *
-
 ```
 
 ### input data for an end-to-end demonstration

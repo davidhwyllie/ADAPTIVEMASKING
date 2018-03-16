@@ -453,38 +453,3 @@ class AdaptiveMasking():
 		layout = tls
 		show(layout) 
 
-		# sometimes, if model predictions are unstable, very wide CIs are generated.
-		# we generate new fields, clip_lower_ci and clip_upper_ci with abs(ci) = clip_ci for such unstable estimates.
-		# this helps depiction
-
-
-am = AdaptiveMasking(
-	analysis_name = 'test1',
-	persistdir = os.path.join('..','modelling','tmp'),
-	genus_of_interest= 'Mycobacterium',
-	genbank_file_name = os.path.join("..", "modelling", "refgenome", "NC_000962.3.gb")
-	)
-
-# read in kraken and region reports
-am.read_model_input(kraken_inputpath = os.path.join('..','modelling','kraken_reports','*.kraken_report'),
-				    region_inputpath = os.path.join('..','modelling','region_reports','*.tsv')
-					)
-
-# fit the model
-am.fit_model()
-exit()
-
-# you can read the results of a stored analysis
-am = AdaptiveMasking(
-	analysis_name = 'test1',
-	persistdir = os.path.join('..','modelling','tmp'),
-	genus_of_interest= 'Mycobacterium',
-	rebuild_databases_if_present  = False
-					)
-
-am.depict_model()
-#
-exit()
-
-
-

@@ -31,7 +31,7 @@ am.extract_model_input(vcf_inputpath=os.path.join('*','*.bowtie.vcf.gz'))
 And Kraken and vcf region information read in
 ```
 print("Reading in Kraken and vcf result files")
-am.read_model_input(kraken_inputpath = os.path.join('*','*.kraken.txt'),
+am.read_model_input(kraken_inputpath = os.path.join('*','*.kraken.report.txt'),
 				    region_inputpath = os.path.join('..','output','bowtie','*.regionstats.txt')
 	)
 ```

@@ -146,50 +146,51 @@ class AdaptiveMasking():
 						 max_files_analysed = 1e8
 						):
 		""" reads in the inputs to the statistical model.
-		
+
 		Arguments:
 				kraken_inputpath: a path which when globbed yields kraken reports
 				region_inputpath: a path which when globbed yields region reports
-				
 		Returns:
 				none
 				Output is written to the hdf5 database at self.hdf_file
 		"""
-		
+
 		# make KrakenReader object, identifying the genus Mycobacterium.
 		krr = KrakenReportReader(genus_of_interest = self.genus_of_interest)
-		
+
 		results = []
 		nRead = 0
 		logging.info("Summarising Kraken data for analysis")
 		for inputfile in glob.glob(kraken_inputpath):
+			print(inputfile)
 			sampleId = os.path.basename(inputfile)[0:36]
 			result = krr.simplify(inputfile = inputfile, guid = sampleId)
 			results.append(result)
-			
+
 			nRead+=1
 			if nRead % 100 == 0:
 				logging.info("Read {0} Kraken files".format(nRead))
 			if nRead > max_files_analysed:
 				logging.warning("Stopped reading Kraken data as max_files_analysed was reached")
 				break
-		
+
 		# generate a data frame comprising the Kraken summary
 		kraken = pd.DataFrame.from_dict(results)
-		
+
 		# if there are no reads, then we cannot analyse such samples.  we drop them.
 		kraken = kraken[kraken['nReads']>0]
 		logging.info("Excluded results with zero reads.  {0} remain.".format(len(kraken.index)))
-		
+
+
 		# categorise the proportion of bacterial reads which are not of interest.
 		# and create pseudovariables while dropping the first column which is the reference category.
 		for i in kraken.index:
 			kraken.loc[i, 'prop_bug'] = kraken.loc[i,'B']/kraken.loc[i,'nReads']
-			
+
 		kraken['prop_bug_cat'] =  pd.cut(kraken['prop_bug'], bins=self.categorisation_bins, include_lowest=True)
 		kraken_pseudo = pd.crosstab(kraken['sampleId'], kraken['prop_bug_cat'])
 		kraken_pseudo.columns = kraken_pseudo.columns.astype(str)
-		
+
 		# drop the first column: it is reference
 		kraken_pseudo = kraken_pseudo.drop(axis=1, columns = kraken_pseudo.columns.tolist()[0])
 		kraken_pseudo.to_hdf(self.hdf_file, 'explan',
@@ -198,14 +199,13 @@ class AdaptiveMasking():
 						  append= True,
 						  data_columns= ['sampleId','gene'])
 		logging.info("Recovered {0} kraken results".format(len(kraken.index)))
-		
-		
+
 		# now recover all the data from the genetic parsing.
 		# store in an hdf5 data structure.
 		results = []
 		nRead = 0
 		kraken_sampleIds = set(kraken['sampleId'])
-		
+
 		inputfiles = glob.glob(region_inputpath)
 		for inputfile in inputfiles:
 			df = pd.read_csv(inputfile, sep='\t')

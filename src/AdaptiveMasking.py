@@ -10,7 +10,7 @@ import logging
 import statsmodels.api as sm
 from bokeh.layouts import gridplot
 from bokeh.plotting import figure, show, output_file
-from bokeh.io import output_file, show
+from bokeh.io import output_file, show, save as bokeh_save
 from bokeh.layouts import row, column, gridplot, widgetbox
 from bokeh.models import  NumberFormatter
 from bokeh.models import  ColumnDataSource,\
@@ -197,7 +197,7 @@ class AdaptiveMasking():
 						  mode='a',
 						  format='table',
 						  append= True,
-						  data_columns= ['sampleId','gene'])
+						  data_columns= ['sampleId'])
 		logging.info("Recovered {0} kraken results".format(len(kraken.index)))
 
 		# now recover all the data from the genetic parsing.
@@ -205,25 +205,33 @@ class AdaptiveMasking():
 		results = []
 		nRead = 0
 		kraken_sampleIds = set(kraken['sampleId'])
-
+		
 		inputfiles = glob.glob(region_inputpath)
 		for inputfile in inputfiles:
-			df = pd.read_csv(inputfile, sep='\t')
-			guid = basename(inputfile)[0:38]
+			df = pd.read_csv(inputfile, sep=',')
+			# check the names are those expected
+			expected = set(['roi_name', 'mean_depth', 'min_depth', 'max_depth', 'start', 'stop', 'length', 'mean_maf', 'total_depth', 'total_nonmajor_depth'])
+			observed = set(df.columns.values.tolist())
+			if not expected == observed:
+				raise KeyError("Column header for {0} are not as expected: expected =  {1}, observed = {2}".format(inputfile, expected, observed))
+
+			guid = os.path.basename(inputfile)[0:36]
 			df['sampleId']= guid
-		
+			
+			print("Seeking:",guid)
 			if guid in kraken_sampleIds:		# if there is a kraken report
 				# read into database
-				try:
-					df.to_hdf(self.hdf_file, 'model_input',
+				#try:
+				df.to_hdf(self.hdf_file, 'model_input',
 							  mode='a',
 							  format='table',
 							  append= True,
-							  data_columns= ['sampleId','gene'])
-				except ValueError:
-					# occurs if the data file is malformed or missing
-					logging.warn("Data file could not be loaded; malformed {0}".format(inputfile))
-					print(df)
+							  data_columns= ['sampleId','roi_name'])
+				#except ValueError:
+				#		# occurs if the data file is malformed or missing
+				#	logging.warn("Data file could not be loaded; malformed or missing {0}".format(inputfile))
+				#	print(df)
+				#	exit()
 					
 				nRead+=1
 				if nRead % 100 == 0:
@@ -252,18 +260,17 @@ class AdaptiveMasking():
 		except KeyError:
 			raise KeyError("Tried and failed to read Kraken data.  You must load Kraken data with .read_model_input() before fitting models.")
 		
-		# recover all genes in the database
-		logging.info("Fitting models; reading gene names")	
-		res = pd.read_hdf(self.hdf_file, 'model_input', columns=['gene'])
-		roi_names = res['gene'].unique()
+		logging.info("Iterating over roi_names")	
+				
+		
 		n_rois = 0
-		for roi_name in roi_names:		# ['B55','rrs','rrl']:
+		for roi_name in self.rs.regions['roi_name']:		# ['B55','rrs','rrl'] etc:
 			
 			## construct a statistical model for each roi_name
 			logging.info("Modelling {0}".format(roi_name))
 			
 			# construct data frame for modelling
-			model_input = pd.read_hdf(self.hdf_file, 'model_input',  where='gene=="{0}"'.format(roi_name))
+			model_input = pd.read_hdf(self.hdf_file, 'model_input',  where='roi_name=="{0}"'.format(roi_name))
 			model_input = model_input[['sampleId','total_depth','total_nonmajor_depth']]
 			model_input = model_input.set_index('sampleId',drop=True)
 			model_input = kraken_pseudo.merge(model_input, how='inner', left_index=True, right_index=True)	
@@ -273,26 +280,31 @@ class AdaptiveMasking():
 			explan_vars = model_input[explan_cols]
 			explan_vars = sm.add_constant(explan_vars, prepend=True)
 			
-			if sum(model_input['total_nonmajor_depth']) ==0:
-				# then initial setting of mu fails.  looks to me like regression of this bug:
-				# https://bugs.launchpad.net/statsmodels/+bug/603306
-				# pending fix in statsmodels, in this situation we set the total_nonmajor_depth to 1 for one item.
-				model_input.loc[model_input.index[0], 'total_nonmajor_depth'] = 1
+			if len(model_input.index)>0:
+				# there is some data to model
+				if sum(model_input['total_nonmajor_depth']) ==0:
+					# then initial setting of mu fails.  looks to me like regression of this bug:
+					# https://bugs.launchpad.net/statsmodels/+bug/603306
+					# pending fix in statsmodels, in this situation we set the total_nonmajor_depth to 1 for one item.
+					model_input.loc[model_input.index[0], 'total_nonmajor_depth'] = 1
 		
-			## fit model
-			# total_nonmajor_depth ~ prop_bug_catcat + offset(log(total_depth)
-		
-			try:
-				poisson_model = sm.GLM(model_input['total_nonmajor_depth'],
+				## fit model
+				# total_nonmajor_depth ~ prop_bug_catcat + offset(log(total_depth)
+			
+				try:
+					poisson_model = sm.GLM(model_input['total_nonmajor_depth'],
 									   explan_vars,
 									   offset = model_input['offset'],
 									   family = sm.families.Poisson()
 									)
-				poisson_results  = poisson_model.fit()
-				model_fit_succeeded = True
+					poisson_results  = poisson_model.fit()
+					model_fit_succeeded = True
 				
-			except sm.tools.sm_exceptions.PerfectSeparationError:
-				# there isn't enough data and colinearity prevents Hessian computation;
+				except sm.tools.sm_exceptions.PerfectSeparationError:
+					# there isn't enough data and colinearity prevents Hessian computation;
+					model_fit_succeeded = False
+			else:
+				logging.warn("Model not fitted, as no data was present for region {0}".format(roi_name))
 				model_fit_succeeded = False
 			
 			if model_fit_succeeded == True:	
@@ -308,8 +320,8 @@ class AdaptiveMasking():
 				res['parameter']=res.index
 				
 			else:
-				logging.WARN("Model fitting failed, skipping region {0}".format(roi_name))
-				model_input.to_hdf(hdf_file, 'modelling_failed_input',
+				logging.warn("Model fitting failed, skipping region {0}".format(roi_name))
+				model_input.to_hdf(self.hdf_file, 'modelling_failed_input',
 						  mode='a',
 						  format='table',
 						  append= True)
@@ -326,13 +338,18 @@ class AdaptiveMasking():
 					)
 				
 			n_rois +=1
-			
+			# enforce type
+			res['Estimate'] =  res['Estimate'].astype(float)
+			res['p_value'] = res['p_value'].astype(float)
+			res['lower_ci'] = res['lower_ci'].astype(float)
+			res['upper_ci'] = res['upper_ci'].astype(float)
+
 			if n_rois == 1:
 				estimated_mixtures = res
+
 			else:
 				estimated_mixtures = estimated_mixtures.append(res, ignore_index=True)
-				print("Fitting {0} #{1}".format(roi_name, n_rois))
-			
+							
 			# debug
 			#if n_rois > 50:
 			#	break
@@ -343,8 +360,8 @@ class AdaptiveMasking():
 						  append= False)
 		self.coefficients = estimated_mixtures
 		return estimated_mixtures
-	def depict_model(self,
-					 exclude_estimates_over = 10000):
+	def depict_model(self, 
+				 exclude_estimates_over = 10000):
 		
 		""" depicts the coefficients fitted.
 		
@@ -383,6 +400,9 @@ class AdaptiveMasking():
 		bivar = df1.merge(df2, how = 'inner', on= 'roi_name')
 		bivar = bivar.merge(self.rs.regions, how = 'inner', on= 'roi_name')
 
+		# drop  any estimates >  exclude_estimates_over
+		bivar = bivar.query("hi  < "+str(exclude_estimates_over))
+		bivar = bivar.query("const<"+str(exclude_estimates_over))
 		bivar_source= ColumnDataSource(bivar)
 		bivar_tools = "save,reset,box_zoom,zoom_in,zoom_out,pan,tap,box_select"
 		
@@ -496,5 +516,16 @@ class AdaptiveMasking():
 		tls = Tabs (tabs = tab_content)
 
 		layout = tls
-		show(layout) 
+		output_files = []
+		output_file(filename = os.path.join(self.persistdir, '{0}.html'.format(self.analysis_name)), title= self.analysis_name)
+		fn = bokeh_save(layout)
+		output_files.append(fn)
+		fn = os.path.join(self.persistdir, '{0}_bivar.csv'.format(self.analysis_name))
+		bivar.to_csv(fn)
+		output_files.append(fn)
+		fn = os.path.join(self.persistdir, '{0}_coeffs.csv'.format(self.analysis_name))
+		self.coefficients.to_csv(fn)
+		output_files.append(fn)
+		logging.info("Output written to {0}".format(output_files)) 
+
 

@@ -31,7 +31,7 @@ if __name__ == '__main__':
     
     # identify the genbank file of interest
     print("Extracting features from genbank file {0}".format(args.genbank_file_name))
-    rs = regionScan_from_genbank(args.genbank_file_name, method = 'CDS', infotag=args.infotag)
+    rs = regionScan_from_genbank(args.genbank_file_name, method = 'gene', infotag=args.infotag)
     print("Feature extraction complete")	
     
     # export the extracted CDs to excel;

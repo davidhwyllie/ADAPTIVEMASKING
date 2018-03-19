@@ -81,7 +81,7 @@ class AdaptiveMasking():
 				raise FileExistsError("genbank_file_name specifies non-existent file {0}".format(genbank_file_name))
 
 			# generate a regionScan_from_genbank object for the first time.
-			self.rs = regionScan_from_genbank(genbank_file_name, method = 'CDS')
+			self.rs = regionScan_from_genbank(genbank_file_name, method = 'gene')
 
 			# persist self.rs.regions, which are the regions to be examined.
 			self.rs.regions.to_hdf(self.hdf_file, 'regions',

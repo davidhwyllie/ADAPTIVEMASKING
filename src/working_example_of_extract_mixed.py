@@ -10,7 +10,7 @@ from vcfScan import regionScan_from_genbank
 # identify the genbank file of interest
 genbank_file_name = os.path.join("..", "testdata", "NC_000962.3.gb")
 print("Extracting features from genbank file {0}".format(genbank_file_name))
-rs = regionScan_from_genbank(genbank_file_name, method = 'CDS', infotag= 'BaseCounts4')
+rs = regionScan_from_genbank(genbank_file_name, method = 'gene', infotag= 'BaseCounts4')
 print("Feature extraction complete")	
 
 # export the extracted CDs to excel;

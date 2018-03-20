@@ -32,6 +32,11 @@ echo Getting MiniKraken dusted database
 wget https://ccb.jhu.edu/software/kraken/dl/minikraken_20171101_4GB_dustmasked.tgz
 tar -xvf minikraken_20171101_4GB_dustmasked.tgz
 
+echo Getting Bowtie2
+wget https://sourceforge.net/projects/bowtie-bio/files/bowtie2/2.3.4.1/bowtie2-2.3.4.1-linux-x86_64.zip
+unzip bowtie2-2.3.4.1-linux-x86_64.zip
+
+
 echo Cleanup
 rm *.zip
 rm *.tgz

@@ -8,8 +8,8 @@ from AdaptiveMasking import AdaptiveMasking
 # fit model
 print("Starting up")
 am = AdaptiveMasking(
-	analysis_name = 'bowtie',
-	persistdir = os.path.join('..','output','bowtie'),
+	analysis_name = 'bowtie2_vs',
+	persistdir = os.path.join('..','output','bowtie2_vs'),
 	genus_of_interest= 'Mycobacterium',
 	rebuild_databases_if_present  = False,
 	genbank_file_name = os.path.join("..", '..', "testdata", "NC_000962.3.gb")

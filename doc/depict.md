@@ -25,4 +25,4 @@ am.depict_model()
 
 ```
 
-Example output is included, generated using a 250 sample test set and [four different mapping conditions](../example_output/example_output.md).
+Example output is included, generated using a 250 sample test set and [four different mapping conditions](../pipeline/example_output/example_output.md).

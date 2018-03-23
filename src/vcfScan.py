@@ -444,7 +444,7 @@ class regionScan_from_genbank(vcfScan):
 		self.regions = None
 		self.region_stats = None
 		self.infotag = infotag
-		
+
 		def feat2regions(feature_list):
 			""" create self.regions from feature_list """
 			self.regions = pd.DataFrame.from_records(feature_list, index='id')
@@ -473,8 +473,8 @@ class regionScan_from_genbank(vcfScan):
 				feature_list = [{'id':1,
 								 'roi_name':'All',
 								 'start_pos':1,
-								 'end_pos':len(record.seq)}
-					]
+								 'end_pos':len(record.seq)
+								 }]
 				feat2regions(feature_list)
 				
 			elif method == 'gene':
@@ -561,7 +561,33 @@ class regionScan_from_genbank(vcfScan):
 		for i in self.regions.index:		
 			self.add_roi(roi_name = self.regions.loc[i,'roi_name'], roi_positions = range(self.regions.loc[i, 'start_pos'], self.regions.loc[i,'end_pos']+1))
 
+	def generate_bed(self, genbank_file_name, bed_file_name):
+		""" generates an IGV compatible BED file """
 		
+		genbank_file_stem = os.path.basename(genbank_file_name).replace('.gb','')
+			
+		with open(genbank_file_name, 'r') as fr:
+			with open(bed_file_name,'wt') as fo:
+
+				header = """track name="{0}" description="{0} genes" itemRgb=On\n""".format(genbank_file_stem)
+				fo.write(header)
+				for record in SeqIO.parse(fr, "genbank"):
+					for feature in record.features:
+						if feature.type == 'gene':
+							start = feature.location.start.position
+							stop = feature.location.end.position
+							try:
+								name = feature.qualifiers['gene'][0]
+							except:
+								# some features only have a locus tag
+								name = feature.qualifiers['locus_tag'][0]
+							if feature.strand < 0:
+								strand = "-"
+							else:
+								strand = "+"
+							bed_line = "cpdna\t{0}\t{1}\t{2}\t1000\t{3}\t{0}\t{1}\t65,105,225\n".format(start, stop, name, strand)
+							fo.write(bed_line)
+			fo.close()
 
 class test_vcfScan_1(unittest.TestCase):
 	def runTest(self):
@@ -823,3 +849,16 @@ class test_regionScan_3(unittest.TestCase):
 		bases_observed = set(df['pos'])
 		self.assertEqual(len(bases_observed - bases_expected),0)
 		self.assertEqual(len(bases_expected - bases_observed),0)
+
+class test_regionScan_4(unittest.TestCase):
+	""" test creation of a bed file """
+	def runTest(self):
+		
+		genbank_file_name = os.path.join("..", "testdata", "NC_000962.3.gb")
+		if not os.path.exists(genbank_file_name):
+			self.fail("Input file does not exist.  Please see README.  You may need to install test data.")
+		rs = regionScan_from_genbank(genbank_file_name, method= 'gene', min_region_size = 15)
+		bed_file_name =  os.path.join('..','unitTest_tmp','output.bed')
+		rs.generate_bed(genbank_file_name, bed_file_name)
+		
+	

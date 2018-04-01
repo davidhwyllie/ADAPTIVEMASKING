@@ -1,4 +1,4 @@
-!/bin/sh
+#!/bin/bash
 # start in testdata;
 cd ../testdata
 
@@ -14,6 +14,9 @@ for dir in *
 do
     GUID=${dir%*/}
     echo Analysing: ${GUID}
+    GUIDLEN=${#GUID}
+    
+
     if [ -d $GUID ]; then
         cd ${GUID}
         TARGETFILE=${GUID}.fq.gz
@@ -46,13 +49,10 @@ do
        	 	rm -f sorted_stampy_output.bam.bai
 
 	fi
-    else
+	cd .. 
+   else
 		echo Skipping $GUID as not a directory
     fi
-    cd ..
 done
 
 exit 0
-
-
-

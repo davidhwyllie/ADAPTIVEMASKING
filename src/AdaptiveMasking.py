@@ -129,7 +129,8 @@ class AdaptiveMasking():
 				print('{0} Target file exists {1}; skipped processing'.format(guid, targetfile))
 		
 			else:
-				logging.info("Examining file {0} ".format(guid))
+				print("Examining file {0} ".format(guid))
+			
 				res = self.rs.parse(vcffile = inputfile, guid= guid)
 				self.rs.region_stats.to_csv(targetfile)
 
@@ -424,11 +425,20 @@ class AdaptiveMasking():
 		g2.xaxis.axis_label = 'Genome position'
 		g2.yaxis.axis_label = 'Est. mix with ref cat. extr. DNA'.format(highest_test_cat)
 		 
-		hover1=HoverTool(renderers=[r0, r1,r2])
-		hover1.tooltips= [("roi_name", "@roi_name"),("% mix ref. cat", "@const"),("IRR mix {0}".format(highest_test_cat),"@hi")]
-		bp.add_tools(hover1)
-		g1.add_tools(hover1)
-		g2.add_tools(hover1)				
+		hover_bp=HoverTool(renderers=[r0])
+		hover_bp.tooltips= [("roi_name", "@roi_name"),("start[length]", "@start_pos[@length]"),("% mix ref. cat", "@const"),("IRR mix {0}".format(highest_test_cat),"@hi")]
+		bp.add_tools(hover_bp)
+
+		hover_g1=HoverTool(renderers=[r1])
+		hover_g1.tooltips= [("roi_name", "@roi_name"),("start[length]", "@start_pos[@length]"),("% mix ref. cat", "@const"),("IRR mix {0}".format(highest_test_cat),"@hi")]
+		g1.add_tools(hover_g1)
+
+		hover_g2=HoverTool(renderers=[r2])
+		hover_g2.tooltips= [("roi_name", "@roi_name"),("start[length]", "@start_pos[@length]"),("% mix ref. cat", "@const"),("IRR mix {0}".format(highest_test_cat),"@hi")]
+
+		g2.add_tools(hover_g2)
+
+
 
 		# define columnar data source
 		          # define columnar data source
@@ -449,8 +459,8 @@ class AdaptiveMasking():
 							   editable = False,
 							   fit_columns = True)
 		
-		lc = column ( [row([bp]), row([g1]), row([g2])	] )	# row([data_table]), 
-		content = Panel(child = lc, title='Bivariate')
+		gp = gridplot([[bp],[g1],[g2]]) 
+		content = Panel(child = gp, title='Bivariate')
 			
 		# add the plots to a tab
 		tab_content = []

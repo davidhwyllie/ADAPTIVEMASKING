@@ -1,0 +1,10 @@
+*.h5
+*.txt
+*.json
+*.bed
+*.csv
+outvcf
+*.hdf5
+*.vcf.gz
+
+

@@ -56,7 +56,7 @@ from vcfScan import regionScan_from_genbank
 
 # identify the genbank file of interest
 genbank_file_name = os.path.join("..", "testdata", "NC_000962.3.gb")
-rs = regionScan_from_genbank(genbank_file_name, method = 'CDS', infotag='AD', min_region_size=15)
+rs = regionScan_from_genbank(genbank_file_name, method = 'gene', infotag='AD', min_region_size=15)
 
 ```
 
@@ -85,9 +85,9 @@ start_pos	end_pos	name
 ```
 The regions are named as follows:
 * The *core name* of the region analysed is formed from the locus_tag (e.g. "Rv1525"), unless a gene name is present (e.g. "wbbL2"), in which case it is gene name (locus tag), e.g. "wbbL2 (Rv1525)"
-* If the region corresponds exactly to the CDS of the locus_tag, the region name is *core name* eg *Rv1525*
-* If the region includes the CDS of the locus tag, extended by small regions < *min_region_size* either side, it is prefixed by *incl_*, e.g. *incl_Rv1525*
-* If the region flanks (leftward, if the genome is arranged linearly), but does not include the CDS of *core name*, it is prefixed by *near_*, e.g. *near_Rv1525*
+* If the region corresponds exactly to the gene of the locus_tag, the region name is *core name* eg *Rv1525*
+* If the region includes the gene, extended by small regions < *min_region_size* either side, it is prefixed by *incl_*, e.g. *incl_Rv1525*
+* If the region flanks (leftward, if the genome is arranged linearly), but does not include the gene *core name*, it is prefixed by *near_*, e.g. *near_Rv1525*
 
 Now, we are ready to parse the input vcf files.
 An example of how to do this follows, outputting the summary data into a series of .csv files:

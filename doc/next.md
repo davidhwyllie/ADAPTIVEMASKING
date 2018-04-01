@@ -1,8 +1,8 @@
 # Next
 
-Having identified regions which you believe need masking due to possible low-confidence calling in these region(s), next actions depends on the number of samples you have.
+Having identified regions which you believe need masking due to possible low-confidence calling in these region(s), you can take the following actions:
 
-1) Phylogenetic tree construction
+1) Prior to phylogenetic tree construction
 If you have a sufficiently small number of samples that you can generate phylogenetic trees, 'mask' any consensus bases called in the regions by replacing them with N.
 This tells the phylogenetic tree generation software that no information is contained within these regions.
 

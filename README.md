@@ -10,6 +10,7 @@ regions of variation resulting anywhere in the process followed.
 In [our case](https://www.biorxiv.org/content/early/2018/01/23/252460), increased variation occurred in regions of homology
 between Mycobacteria and other bacterial species, and was detected when laboratory processes started to use broth-culture derived DNA extracts, rather than extracts from pure cultures.  Use of the technique described here allowed identification and masking of the problem regions.
 
+The output from the tools described include [interactive plots describing the determinants of mixtures across the mapped genome](https://davidhwyllie.github.io/ADAPTIVEMASKING/stampy.html) and [spreadsheets containing the same data](pipeline/example_output/stampy/stampy_coeffs.csv).
 __Obtain software and test data__   
 The software needed, and instructions on how to obtain test data, is described [here](doc/Prerequisites.md).  
 

@@ -1,6 +1,6 @@
 # ADAPTIVEMASKING
 
-We describe tools to examine NGS-mapped output to identify regions of high minor variant frequencies,
+We describe tools to examine NGS-mapped output to [identify regions of high minor variant frequencies](https://davidhwyllie.github.io/ADAPTIVEMASKING/Fig2.pdf),
 as [described](https://www.biorxiv.org/content/early/2018/01/23/252460).
 The rationale of doing this is the identification of regions where
 consensus basecalling may be unreliable.  The process is 'adaptive' in

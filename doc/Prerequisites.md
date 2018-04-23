@@ -47,38 +47,56 @@ On Windows systems, we used the numpy+mkl windows binaries [available here](http
 On both platforms, we installed all other dependencies using pip3.
 
 ## Getting software for an end-to-end demonstration of the process
-This can be installed automatically on linux systems.  The below script will also download a 4GB minikraken database.  Please edit the script if you do not require this.
+This can be installed automatically on linux systems.  Note:
+* The paths given for software downloads may change as third party software versions update.  Please see the software URLs above ('software') if links break.
+* The below script will also download a 4GB minikraken database.  Please edit the script if you do not require this.
+
 ```
 cd pipeline/software
 chmod +x get_software
 ./get_software.sh
 ```
 
-See the /pipeline/software directory
+Output is written into the /pipeline/software directory.
+
 ## Test data
 Some test data is supplied when cloning the github repository, but 
 * vcf files used for unit testing
 * fastq.gz files used as input to the end-to-end demonstration
   are too large to be installed from github.
-You can obtain this data as below:
 
-### test data for unit testing
+This data is being transferred to a permanent repository  [here](https://ora.ox.ac.uk/objects/uuid:88d93ec1-2757-4e46-83f4-dbdfc01b5343)
+but is currently available [here](https://www.dropbox.com/sh/rblwq86qd6cnjfb/AAB35TApL8KLfJINReTPCSsya).
+You can obtain test data as below:
+
+### test data for unit testing [1.2GB]
 ```
 cd testdata
-wget ****
-gunzip *
+DOWNLOADURL=https://www.dropbox.com/s/277ops3cg2ngu2k/testdata.tar
+wget $DOWNLOADURL
+tar -xf testdata.tar
 ```
 
-### input data for an end-to-end demonstration
+### input data comprising 250 fastq.gz files for an end-to-end demonstration [65G]
 ```
 cd pipeline/testdata
-wget ****
-gunzip *
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_0.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_1.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_2.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_3.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_4.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_5.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_6.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_7.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_8.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_9.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_a.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_b.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_c.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_d.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_e.tar
+wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_f.tar
 
-```
-You can also do so by running the get_test_data.py script in the src/ directory.
+tar -xf *.tar
 
-```
-cd src
-python3 get_test_data.py
 ```

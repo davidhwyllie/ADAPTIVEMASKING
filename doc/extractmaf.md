@@ -1,10 +1,10 @@
 # Extract minor variant frequencies from VCF files
 
 Extracting minor variant frequencies from VCF files is done using the *regionScan_from_genbank* class.
-The code examines a VCF file, of which two examples are below.  
+The code examines a VCF file.  It expects a tag in the INFO section containing base counts.  Two examples are below.  
 #### 1 annotated with GATK
 *regionScan_from_genbank* can read the [BaseCounts](https://software.broadinstitute.org/gatk/documentation/tooldocs/3.8-0/org_broadinstitute_gatk_tools_walkers_annotator_BaseCounts.php) INFO tag applied using [GATK VariantAnnotator](https://software.broadinstitute.org/gatk/documentation/tooldocs/3.8-0/org_broadinstitute_gatk_tools_walkers_annotator_VariantAnnotator.php).
-In GATK v4, it appears that VariantAnnotator is still beta.
+This has been tested with GATK v3 and earlier.  In GATK v4, it appears that VariantAnnotator is still beta.
 
 In the below example, the BaseCounts INFO element contains a list of filtered depths of A,C,G,T respectively.
 ```
@@ -161,10 +161,10 @@ Please see the documentation in the file for command line options.
 The following command would do the same as the example above:
 
 ```
-python3 extract_mixed.py ../testdata/NC_000962.3.gb ../testdata/*v3.vcf.gz BaseCounts4 ../output
+python3 extract_mixed.py ../testdata/NC_000962.3.gb ../testdata/*v3.vcf.gz BaseCounts ../output
 
 ```
 
 ### Using the AdaptiveMasking object
-The AdaptiveMasking object uses *regionScan_from_genbank* to extract mixture frequencies, using the *extract_model_input()* method.
+The AdaptiveMasking object uses *regionScan_from_genbank* internally to extract mixture frequencies, using the *extract_model_input()* method.
 This is illustrated in an [example script running the end-to-end process on Bowtie-mapped samples](../pipeline/testdata/process_bowtie.py).

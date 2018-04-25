@@ -65,37 +65,28 @@ Some test data is supplied when cloning the github repository, but
 * fastq.gz files used as input to the end-to-end demonstration
   are too large to be installed from github.
 
-This data is being transferred to a permanent repository  [here](https://ora.ox.ac.uk/objects/uuid:88d93ec1-2757-4e46-83f4-dbdfc01b5343)
-but is currently available [here](https://www.dropbox.com/sh/rblwq86qd6cnjfb/AAB35TApL8KLfJINReTPCSsya).
+This data is  [here](https://ora.ox.ac.uk/objects/uuid:88d93ec1-2757-4e46-83f4-dbdfc01b5343)
 You can obtain test data as below:
 
 ### test data for unit testing [1.2GB]
 ```
 cd testdata
-DOWNLOADURL=https://www.dropbox.com/s/277ops3cg2ngu2k/testdata.tar
-wget $DOWNLOADURL
+wget --no-check-certificate -O testdata.tar "https://ora.ox.ac.uk/objects/uuid:88d93ec1-2757-4e46-83f4-dbdfc01b5343/download_file?file_format=x-tar&safe_filename=testdata.tar&type_of_work=Dataset"
 tar -xf testdata.tar
 ```
 
 ### input data comprising 250 fastq.gz files for an end-to-end demonstration [65G]
 ```
 cd pipeline/testdata
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_0.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_1.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_2.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_3.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_4.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_5.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_6.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_7.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_8.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_9.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_a.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_b.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_c.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_d.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_e.tar
-wget https://www.dropbox.com/s/vhp7rv6a3hpqz2j/fq_f.tar
+FILEPART=(0 1 2 3 4 5 6 7 8 9 a b c d e f)
+for i in "${FILEPART[@]}"
+do
+  TARGETFILE=fq_${i}.tar
+  DOWNLOADURL="https://ora.ox.ac.uk/objects/uuid:88d93ec1-2757-4e46-83f4-dbdfc01b5343/download_file?file_format=x-tar&safe_filename=${TARGETFILE}&type_of_work=Dataset"
+
+  echo "Downloading $TARGETFILE"
+  wget --no-check-certificate -O $TARGETFILE $DOWNLOADURL
+done;
 
 tar -xf *.tar
 

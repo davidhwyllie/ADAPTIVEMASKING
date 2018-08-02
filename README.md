@@ -1,19 +1,19 @@
 # ADAPTIVEMASKING
 
 We describe tools to examine NGS-mapped output to [identify regions of high minor variant frequencies](https://davidhwyllie.github.io/ADAPTIVEMASKING/Fig2.pdf),
-as [described](https://www.biorxiv.org/content/early/2018/01/23/252460).
+as [described](https://www.ncbi.nlm.nih.gov/pubmed/29875188).
 The rationale for doing this is the identification of regions where
 consensus basecalling may be unreliable.  The process is 'adaptive' in
 the sense that it models variation which arises during the entire
 laboratory, sequencing and mapping process and can be used to identify
 regions of variation resulting anywhere in the process followed.
-In [our case](https://www.biorxiv.org/content/early/2018/01/23/252460), increased variation occurred in regions of homology
+In [our case](https://www.ncbi.nlm.nih.gov/pubmed/29875188), increased variation occurred in regions of homology
 between Mycobacteria and other bacterial species, and was detected when laboratory processes started to use broth-culture derived DNA extracts, rather than extracts from pure cultures.  Use of the technique described here allowed identification and masking of the problem regions.
 
 The output from the tools described include [interactive plots describing the determinants of mixtures across the mapped genome](https://davidhwyllie.github.io/ADAPTIVEMASKING/stampy.html) and [spreadsheets containing the same data](pipeline/example_output/stampy/stampy_coeffs.csv).  
 
 __Obtain software and test data__   
-The software needed, and instructions on how to obtain test data, is described [here](doc/Prerequisites.md).  
+The software needed, and instructions on how to obtain test data, is [here](doc/Prerequisites.md).  
 
 __Quick start__  
 A demonstration of the end-to-end process using test data follows.
